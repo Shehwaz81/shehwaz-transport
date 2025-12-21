@@ -47,14 +47,14 @@ export function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link
-              href="#contact"
+              href="/#contact"
               className="w-full sm:w-auto px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
             >
               Start Shipping
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              href="#services"
+              href="/#services"
               className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white rounded-full font-bold text-lg transition-all"
             >
               Our Services

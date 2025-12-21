@@ -2,35 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const services = [
-  {
-    title: "Long-Haul Transport",
-    description: "Reliable coast-to-coast shipping for your most critical freight. We ensure your cargo reaches its destination safely and on schedule.",
-    image: "/images/truck2.jpeg",
-    className: "md:col-span-2",
-  },
-  {
-    title: "Expedited Shipping",
-    description: "Time-sensitive deliveries that can't wait. Our expedited services guarantee the fastest transit times possible.",
-    image: "/images/truck3.jpeg",
-    className: "md:col-span-1",
-  },
-  {
-    title: "Temperature Controlled",
-    description: "State-of-the-art reefer units to keep your perishable goods at the perfect temperature throughout the journey.",
-    image: "/images/info.jpeg", // Using info.jpeg as a placeholder for reefer/specialized
-    className: "md:col-span-1",
-  },
-  {
-    title: "Dedicated Logistics",
-    description: "Customized fleet solutions acting as an extension of your business. We handle the logistics so you can focus on growth.",
-    image: "/images/truck1.jpeg", // Reusing truck1 for variety
-    className: "md:col-span-2",
-  },
-];
+import { services } from "@/lib/data";
 
 export function Services() {
   return (
@@ -58,43 +33,45 @@ export function Services() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px]">
           {services.map((service, index) => (
-            <motion.div
-              key={service.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className={cn(
-                "relative group overflow-hidden rounded-3xl bg-navy-800 border border-white/5",
-                service.className
-              )}
+            <Link 
+              key={service.id} 
+              href={`/services/${service.id}`}
+              className={cn("block h-full", service.className)}
             >
-              {/* Background Image */}
-              <Image
-                src={service.image}
-                alt={service.title}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40"
-              />
-              
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/50 to-transparent" />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="relative group h-full overflow-hidden rounded-3xl bg-navy-800 border border-white/5 cursor-pointer"
+              >
+                {/* Background Image */}
+                <Image
+                  src={service.image}
+                  alt={service.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-60 group-hover:opacity-40"
+                />
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/50 to-transparent" />
 
-              {/* Content */}
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-2xl font-bold text-white">{service.title}</h3>
-                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <ArrowUpRight className="w-5 h-5 text-white" />
+                {/* Content */}
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold text-white">{service.title}</h3>
+                      <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <ArrowUpRight className="w-5 h-5 text-white" />
+                      </div>
                     </div>
+                    <p className="text-gray-300 line-clamp-2 group-hover:line-clamp-none transition-all duration-500">
+                      {service.shortDescription}
+                    </p>
                   </div>
-                  <p className="text-gray-300 line-clamp-2 group-hover:line-clamp-none transition-all duration-500">
-                    {service.description}
-                  </p>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </div>
