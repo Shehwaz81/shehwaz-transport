@@ -2,8 +2,8 @@ import { Truck, Clock, Warehouse, Package, Zap, MapPin } from "lucide-react";
 
 export const contactInfo = {
   email: "dispatch@shehwaztransport.ca",
-  phone: "+1 (555) 123-4567", // Placeholder, user didn't provide phone
-  address: "Toronto, ON", // Placeholder
+  phone: "+1 (416) 908-8377", // Placeholder, user didn't provide phone
+  address: "Windsor, ON, Canada", // Placeholder
 };
 
 export const services = [
