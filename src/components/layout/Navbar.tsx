@@ -25,12 +25,24 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Only prevent default and scroll if we are on the home page
+    if (window.location.pathname === "/") {
+      e.preventDefault();
+      const contactSection = document.getElementById("contact");
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: "smooth" });
+      }
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   return (
     <>
       <TopBar />
       <header
         className={cn(
-          "sticky top-0 left-0 right-0 z-50 transition-all duration-300",
+          "sticky top-0 left-0 right-0 z-[100] transition-all duration-300",
           isScrolled
             ? "bg-navy-900/90 backdrop-blur-md border-b border-white/10 py-4 shadow-lg"
             : "bg-navy-900/50 backdrop-blur-sm border-b border-white/5 py-5"
@@ -42,7 +54,7 @@ export function Navbar() {
               <Truck className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">
-              SHEHWAZ <span className="text-orange-500">TRANSPORT</span>
+              SHEHWAZ <span className="text-orange-500">TRANSPORT INC</span>
             </span>
           </Link>
 
@@ -59,8 +71,9 @@ export function Navbar() {
               </Link>
             ))}
             <Link
-              href="#contact"
-              className="bg-white text-navy-900 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-colors"
+              href="/#contact"
+              onClick={scrollToContact}
+              className="bg-white text-navy-900 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-colors cursor-pointer"
             >
               Get a Quote
             </Link>
@@ -96,9 +109,12 @@ export function Navbar() {
                   </Link>
                 ))}
                 <Link
-                  href="#contact"
-                  className="bg-orange-500 text-white px-5 py-3 rounded-lg text-center font-bold hover:bg-orange-600 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  href="/#contact"
+                  className="bg-orange-500 text-white px-5 py-3 rounded-lg text-center font-bold hover:bg-orange-600 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    scrollToContact(e);
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   Get a Quote
                 </Link>

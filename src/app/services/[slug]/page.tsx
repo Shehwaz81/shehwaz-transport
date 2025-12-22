@@ -44,11 +44,11 @@ export default async function ServicePage({
 
         <div className="container relative z-10 px-4 md:px-6">
           <Link 
-            href="/#services" 
+            href="/" 
             className="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 mb-6 transition-colors font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Services
+            Back to Home
           </Link>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             {service.title}

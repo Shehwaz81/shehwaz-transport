@@ -15,7 +15,7 @@ export function Services() {
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
             className="text-3xl md:text-5xl font-bold text-white mb-6"
           >
             Our Services
@@ -23,7 +23,7 @@ export function Services() {
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ delay: 0.1 }}
             className="text-gray-400 text-lg"
           >
@@ -41,7 +41,7 @@ export function Services() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, margin: "-50px" }}
                 transition={{ delay: index * 0.1 }}
                 className="relative group h-full overflow-hidden rounded-3xl bg-navy-800 border border-white/5 cursor-pointer"
               >

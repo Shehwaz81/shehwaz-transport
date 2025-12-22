@@ -17,7 +17,7 @@ export function Contact() {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-50px" }}
             className="space-y-8"
           >
             <div>
@@ -75,18 +75,25 @@ export function Contact() {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-50px" }}
             transition={{ delay: 0.2 }}
             className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-10"
           >
             <h3 className="text-2xl font-bold text-white mb-6">Request a Quote</h3>
-            <form className="space-y-6">
+            <form 
+              className="space-y-6"
+              action={`mailto:${contactInfo.email}`}
+              method="post"
+              encType="text/plain"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-medium text-gray-300">Name</label>
                   <input
                     type="text"
                     id="name"
+                    name="name"
+                    required
                     className="w-full bg-navy-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
                     placeholder="John Doe"
                   />
@@ -96,6 +103,7 @@ export function Contact() {
                   <input
                     type="text"
                     id="company"
+                    name="company"
                     className="w-full bg-navy-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
                     placeholder="Company Name"
                   />
@@ -108,6 +116,8 @@ export function Contact() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
+                    required
                     className="w-full bg-navy-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
                     placeholder="john@company.com"
                   />
@@ -117,6 +127,8 @@ export function Contact() {
                   <input
                     type="tel"
                     id="phone"
+                    name="phone"
+                    required
                     className="w-full bg-navy-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors"
                     placeholder="+1 (555) 000-0000"
                   />
@@ -127,7 +139,9 @@ export function Contact() {
                 <label htmlFor="message" className="text-sm font-medium text-gray-300">Message</label>
                 <textarea
                   id="message"
+                  name="message"
                   rows={4}
+                  required
                   className="w-full bg-navy-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-orange-500 transition-colors resize-none"
                   placeholder="Tell us about your shipping needs..."
                 />

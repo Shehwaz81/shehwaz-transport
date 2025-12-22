@@ -31,4 +31,9 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Smooth scrolling for the whole document */
+  html {
+    scroll-behavior: smooth;
+  }
 }

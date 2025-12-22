@@ -1,4 +1,4 @@
-import { Truck, Clock, Warehouse, Package, Zap, MapPin } from "lucide-react";
+import { Truck, Clock, Package, Zap } from "lucide-react";
 
 export const contactInfo = {
   email: "dispatch@shehwaztransport.ca",
@@ -68,18 +68,5 @@ export const services = [
     icon: Clock,
     image: "/images/info.jpeg",
     className: "md:col-span-2",
-  },
-  {
-    id: "warehouse-distribution",
-    title: "Warehouse & Distribution",
-    shortDescription: "Secure storage and efficient distribution solutions to streamline your supply chain.",
-    fullDescription: `
-      <p>Need warehousing with your transportation? Shehwaz Transport can help your company with more than just commercial freight delivery. We save you money and get products to their customers faster and cheaper by storing it in our warehouse.</p>
-      
-      <p>Our warehousing solutions are flexible and scalable, allowing you to manage inventory fluctuations with ease. Combined with our distribution network, we offer a seamless end-to-end logistics experience.</p>
-    `,
-    icon: Warehouse,
-    image: "/images/truck2.jpeg", // Reusing image for now
-    className: "md:col-span-1",
   },
 ];

@@ -16,6 +16,21 @@ export const metadata: Metadata = {
   title: "Shehwaz Transport Inc. | Precision Logistics for North America",
   description:
     "Premier logistics partner delivering excellence across miles. Reliable, scalable, and professional trucking solutions.",
+  keywords: [
+    "Shehwaz Transport",
+    "Trucking Company",
+    "Logistics",
+    "Freight Shipping",
+    "North America Transport",
+    "FTL",
+    "LTL",
+    "Expedited Shipping",
+    "Emergency Freight",
+    "Cross-border Shipping",
+    "Canada Trucking",
+    "USA Trucking",
+    "Reliable Logistics",
+  ],
 };
 
 export default function RootLayout({
