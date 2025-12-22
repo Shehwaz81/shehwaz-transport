@@ -36,12 +36,12 @@ const stats = [
 
 export function Stats() {
 	return (
-		<section className="py-24 bg-navy-900 relative overflow-hidden">
+		<section className="py-16 md:py-24 bg-navy-900 relative overflow-hidden">
 			{/* Background Elements */}
 			<div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
 			<div className="container mx-auto px-4 md:px-6">
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
 					{stats.map((stat, index) => (
 						<motion.div
 							key={stat.id}

@@ -6,13 +6,13 @@ import { contactInfo } from "@/lib/data";
 
 export function Contact() {
   return (
-    <section id="contact" className="py-24 bg-navy-900 relative overflow-hidden">
+    <section id="contact" className="py-16 md:py-24 bg-navy-900 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-0 right-0 w-1/3 h-full bg-orange-500/5 blur-3xl" />
       <div className="absolute bottom-0 left-0 w-1/3 h-full bg-blue-500/5 blur-3xl" />
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -21,10 +21,10 @@ export function Contact() {
             className="space-y-8"
           >
             <div>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 md:mb-6">
                 Let's Move Your Business Forward
               </h2>
-              <p className="text-gray-400 text-lg">
+              <p className="text-gray-400 text-base md:text-lg">
                 Ready to streamline your logistics? Contact our team for a custom quote or to discuss your transportation needs.
               </p>
             </div>
@@ -77,9 +77,9 @@ export function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ delay: 0.2 }}
-            className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-10"
+            className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-10"
           >
-            <h3 className="text-2xl font-bold text-white mb-6">Request a Quote</h3>
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-6">Request a Quote</h3>
             <form 
               className="space-y-6"
               action={`mailto:${contactInfo.email}`}

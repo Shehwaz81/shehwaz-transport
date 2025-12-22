@@ -34,18 +34,18 @@ export function Hero() {
             </span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
             Precision Logistics for <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
               North America
             </span>
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed px-4">
             Delivering excellence across miles. We provide reliable, scalable, and professional trucking solutions tailored to your business needs.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 px-4">
             <Link
               href="/#contact"
               className="w-full sm:w-auto px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"

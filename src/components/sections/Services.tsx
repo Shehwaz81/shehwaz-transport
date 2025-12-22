@@ -9,14 +9,14 @@ import { services } from "@/lib/data";
 
 export function Services() {
   return (
-    <section id="services" className="py-24 bg-charcoal-900">
+    <section id="services" className="py-16 md:py-24 bg-charcoal-900">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="mb-16 text-center max-w-3xl mx-auto">
+        <div className="mb-12 md:mb-16 text-center max-w-3xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            className="text-3xl md:text-5xl font-bold text-white mb-6"
+            className="text-3xl md:text-5xl font-bold text-white mb-4 md:mb-6"
           >
             Our Services
           </motion.h2>
@@ -31,7 +31,7 @@ export function Services() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px] md:auto-rows-[400px]">
           {services.map((service, index) => (
             <Link 
               key={service.id} 
