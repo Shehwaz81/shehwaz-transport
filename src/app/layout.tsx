@@ -31,6 +31,27 @@ export const metadata: Metadata = {
     "USA Trucking",
     "Reliable Logistics",
   ],
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
+  openGraph: {
+    title: "Shehwaz Transport Inc. | Precision Logistics for North America",
+    description:
+      "Premier logistics partner delivering excellence across miles. Reliable, scalable, and professional trucking solutions.",
+    url: "https://shehwaztransport.ca",
+    siteName: "Shehwaz Transport Inc.",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Shehwaz Transport Inc. Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

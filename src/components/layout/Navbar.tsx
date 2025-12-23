@@ -2,127 +2,134 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Truck } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TopBar } from "./TopBar";
 
 const navLinks = [
-  { name: "Services", href: "/#services" },
-  { name: "About", href: "/#about" },
-  { name: "Contact", href: "/#contact" },
+	{ name: "Services", href: "/#services" },
+	{ name: "About", href: "/#about" },
+	{ name: "Contact", href: "/#contact" },
 ];
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const [isScrolled, setIsScrolled] = useState(false);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+	useEffect(() => {
+		const handleScroll = () => {
+			setIsScrolled(window.scrollY > 50);
+		};
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
 
-  const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Only prevent default and scroll if we are on the home page
-    if (window.location.pathname === "/") {
-      e.preventDefault();
-      const contactSection = document.getElementById("contact");
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: "smooth" });
-      }
-      setIsMobileMenuOpen(false);
-    }
-  };
+	const scrollToContact = (e: React.MouseEvent<HTMLAnchorElement>) => {
+		// Only prevent default and scroll if we are on the home page
+		if (window.location.pathname === "/") {
+			e.preventDefault();
+			const contactSection = document.getElementById("contact");
+			if (contactSection) {
+				contactSection.scrollIntoView({ behavior: "smooth" });
+			}
+			setIsMobileMenuOpen(false);
+		}
+	};
 
-  return (
-    <>
-      <TopBar />
-      <header
-        className={cn(
-          "sticky top-0 left-0 right-0 z-[100] transition-all duration-300",
-          isScrolled
-            ? "bg-navy-900/90 backdrop-blur-md border-b border-white/10 py-4 shadow-lg"
-            : "bg-navy-900/50 backdrop-blur-sm border-b border-white/5 py-5"
-        )}
-      >
-        <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="bg-orange-500 p-2 rounded-lg group-hover:bg-orange-600 transition-colors">
-              <Truck className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white">
-              SHEHWAZ <span className="text-orange-500">TRANSPORT INC</span>
-            </span>
-          </Link>
+	return (
+		<>
+			<TopBar />
+			<header
+				className={cn(
+					"sticky top-0 left-0 right-0 z-[100] transition-all duration-300",
+					isScrolled
+						? "bg-navy-900/90 backdrop-blur-md border-b border-white/10 py-4 shadow-lg"
+						: "bg-navy-900/50 backdrop-blur-sm border-b border-white/5 py-5"
+				)}
+			>
+				<div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
+					<Link href="/" className="flex items-center gap-3 group">
+						<div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-orange-500 transition-colors bg-white">
+							<Image
+								src="/images/logo-full.png"
+								alt="Shehwaz Transport Logo"
+								fill
+								className="object-cover"
+							/>
+						</div>
+						<span className="text-lg md:text-xl font-bold tracking-tight text-white">
+							SHEHWAZ{" "}
+							<span className="text-orange-500">TRANSPORT INC</span>
+						</span>
+					</Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
-              </Link>
-            ))}
-            <Link
-              href="/#contact"
-              onClick={scrollToContact}
-              className="bg-white text-navy-900 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              Get a Quote
-            </Link>
-          </nav>
+					{/* Desktop Nav */}
+					<nav className="hidden md:flex items-center gap-8">
+						{navLinks.map((link) => (
+							<Link
+								key={link.name}
+								href={link.href}
+								className="text-sm font-medium text-gray-300 hover:text-white transition-colors relative group"
+							>
+								{link.name}
+								<span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-500 transition-all group-hover:w-full" />
+							</Link>
+						))}
+						<Link
+							href="/#contact"
+							onClick={scrollToContact}
+							className="bg-white text-navy-900 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-100 transition-colors cursor-pointer"
+						>
+							Get a Quote
+						</Link>
+					</nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
+					{/* Mobile Menu Button */}
+					<button
+						className="md:hidden text-white"
+						onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+					>
+						{isMobileMenuOpen ? <X /> : <Menu />}
+					</button>
+				</div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute top-full left-0 right-0 bg-navy-900 border-b border-white/10 p-4 md:hidden"
-            >
-              <nav className="flex flex-col gap-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-gray-300 hover:text-white font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-                <Link
-                  href="/#contact"
-                  className="bg-orange-500 text-white px-5 py-3 rounded-lg text-center font-bold hover:bg-orange-600 transition-colors cursor-pointer"
-                  onClick={(e) => {
-                    scrollToContact(e);
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  Get a Quote
-                </Link>
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-    </>
-  );
+				{/* Mobile Menu */}
+				<AnimatePresence>
+					{isMobileMenuOpen && (
+						<motion.div
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							exit={{ opacity: 0, y: -20 }}
+							className="absolute top-full left-0 right-0 bg-navy-900 border-b border-white/10 p-4 md:hidden"
+						>
+							<nav className="flex flex-col gap-4">
+								{navLinks.map((link) => (
+									<Link
+										key={link.name}
+										href={link.href}
+										className="text-gray-300 hover:text-white font-medium"
+										onClick={() => setIsMobileMenuOpen(false)}
+									>
+										{link.name}
+									</Link>
+								))}
+								<Link
+									href="/#contact"
+									className="bg-orange-500 text-white px-5 py-3 rounded-lg text-center font-bold hover:bg-orange-600 transition-colors cursor-pointer"
+									onClick={(e) => {
+										scrollToContact(e);
+										setIsMobileMenuOpen(false);
+									}}
+								>
+									Get a Quote
+								</Link>
+							</nav>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</header>
+		</>
+	);
 }
