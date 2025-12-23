@@ -15,28 +15,25 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Shehwaz Transport Inc. | Windsor Trucking & Cross-Border Logistics",
   description:
-    "Trusted trucking company in Windsor, Ontario. Shehwaz Transport Inc. offers reliable FTL, LTL, and expedited freight services across Canada and the USA.",
+    "Premier trucking company in Windsor, Ontario. Shehwaz Transport Inc. provides reliable FTL, LTL, and expedited freight services to Detroit, Michigan, Toronto, and across North America.",
   keywords: [
     "Shehwaz Transport",
-    "Trucking Company",
-    "Logistics",
-    "Freight Shipping",
-    "North America Transport",
-    "FTL",
-    "LTL",
-    "Expedited Shipping",
-    "Emergency Freight",
-    "Cross-border Shipping",
-    "Canada Trucking",
-    "USA Trucking",
-    "Reliable Logistics",
-    "Windsor Trucking",
-    "Detroit Border Crossing",
-    "Ontario Freight",
-    "Michigan Logistics",
-    "Windsor Cross-border",
+    "Trucking Company Windsor",
+    "Logistics Windsor",
+    "Cross-border Shipping Detroit",
+    "Freight Shipping Ontario",
+    "FTL Carrier Canada",
+    "LTL Shipping USA",
+    "Expedited Freight Michigan",
+    "Emergency Shipping Toronto",
+    "Windsor to Detroit Trucking",
+    "Canada USA Logistics",
+    "Reliable Trucking Company",
     "Local Trucking Windsor",
     "Transport Windsor",
+    "Supply Chain Solutions",
+    "Freight Brokerage",
+    "3PL Services",
   ],
   authors: [{ name: "Shehwaz Transport Inc." }],
   creator: "Shehwaz Transport Inc.",
@@ -62,8 +59,14 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/icon.png",
-    apple: "/apple-icon.png",
+    icon: [
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   openGraph: {
     title: "Shehwaz Transport Inc. | Windsor Trucking & Cross-Border Logistics",
@@ -101,16 +104,17 @@ export default function RootLayout({
     "@type": "TruckingBusiness",
     "name": "Shehwaz Transport Inc.",
     "image": "https://shehwaztransport.ca/images/logo-full.png",
+    "logo": "https://shehwaztransport.ca/images/logo-full.png",
     "@id": "https://shehwaztransport.ca",
     "url": "https://shehwaztransport.ca",
     "telephone": "+1 (416) 908-8377",
     "email": "dispatch@shehwaztransport.ca",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Windsor",
+      "streetAddress": "2024 Cosenza St",
       "addressLocality": "Windsor",
       "addressRegion": "ON",
-      "postalCode": "N8W",
+      "postalCode": "N9G 0B2",
       "addressCountry": "CA"
     },
     "geo": {
@@ -119,10 +123,49 @@ export default function RootLayout({
       "longitude": -83.0364
     },
     "areaServed": [
-      "Windsor",
-      "Detroit",
-      "Ontario",
-      "Michigan",
+      {
+        "@type": "City",
+        "name": "Windsor",
+        "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "ON",
+            "addressCountry": "CA"
+        }
+      },
+      {
+        "@type": "City",
+        "name": "Detroit",
+        "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "MI",
+            "addressCountry": "US"
+        }
+      },
+      {
+        "@type": "City",
+        "name": "Toronto",
+        "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "ON",
+            "addressCountry": "CA"
+        }
+      },
+      {
+        "@type": "State",
+        "name": "Ontario",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "CA"
+        }
+      },
+      {
+        "@type": "State",
+        "name": "Michigan",
+        "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "US"
+        }
+      },
       "North America",
       "Canada",
       "USA"
