@@ -7,7 +7,7 @@ import { QuoteForm } from "@/components/QuoteForm";
 import { TruckStage } from "@/components/TruckStage";
 import { company, facts, services } from "@/lib/data";
 
-const [ftl, ltl, expedited, emergency] = services;
+const [ftl, ltl] = services;
 const bestFor = (text: string) => `Best for: ${text.replace(/\.$/, "").toLowerCase()}.`;
 
 // One screen of the pinned truck scene each; the scene's own chapters are in truck/scene.ts.
@@ -27,14 +27,11 @@ const chapters = [
     links: [{ href: `/services/${ltl.id}`, label: "See less than truckload" }],
   },
   {
-    rail: "Expedited",
-    title: "Expedited and emergency",
-    summary: "Time-critical loads and same-day runs, with an update at every step.",
-    note: "Best for: production parts, line-down situations and hard deadlines.",
-    links: [
-      { href: `/services/${expedited.id}`, label: "See expedited freight" },
-      { href: `/services/${emergency.id}`, label: "See emergency shipping" },
-    ],
+    rail: "On time",
+    title: "Delivered on time",
+    summary: "99% of our loads arrive when we said they would.",
+    note: "Dispatch answers the phone 24 hours a day, so you always know where your freight is.",
+    links: [{ href: "/#quote", label: "Get a quote" }],
   },
   {
     rail: "Cross-border",
@@ -58,7 +55,7 @@ export default function Home() {
             ))}
           </h1>
           <p className="rise mt-6 max-w-[44ch] text-lg leading-relaxed text-mist [--i:4] sm:text-xl">
-            {company.name} is a family-owned carrier based in Windsor, Ontario. Four trucks hauling
+            {company.name} is a carrier based in Windsor, Ontario. Four trucks hauling
             dry van freight between Canada and the United States, with dispatch on the phone 24/7.
           </p>
           <div className="rise mt-8 hidden gap-3 [--i:5] md:flex">
@@ -155,11 +152,10 @@ export default function Home() {
       <section className="bg-white">
         <div className="shell grid gap-14 py-20 sm:py-28 lg:grid-cols-2 lg:gap-20">
           <div>
-            <h2 className="display text-5xl sm:text-7xl">A family company with four trucks.</h2>
+            <h2 className="display text-5xl sm:text-7xl">Four trucks. One number to call.</h2>
             <p className="mt-6 max-w-[50ch] text-lg leading-relaxed text-steel">
-              {company.legalName} was founded in Windsor and is still run by the family that started
-              it. Being small means you deal with the same people on every load, and they&apos;re the
-              ones accountable for it.
+              {company.legalName} is based in Windsor. Being small means you deal with the same
+              people on every load, and they&apos;re the ones accountable for it.
             </p>
             <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-8 border-t-2 border-navy pt-8">
               {facts.map((fact) => (

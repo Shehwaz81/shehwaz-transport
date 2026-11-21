@@ -44,7 +44,7 @@ export function QuoteForm() {
       <div role="status" className="appear rounded-plate border-[1.5px] border-rule bg-white p-8">
         <p className="display text-4xl">Quote request sent.</p>
         <p className="mt-3 max-w-[44ch] text-steel">
-          Dispatch will call or email you back. If the load is urgent, call{" "}
+          Dispatch will call or email you back. To talk it through sooner, call{" "}
           <a href={company.phoneHref} className="font-semibold text-navy underline">
             {company.phone}
           </a>{" "}

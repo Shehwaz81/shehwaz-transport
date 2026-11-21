@@ -44,31 +44,7 @@ export const services = [
     body: [
       "LTL is for freight that doesn't fill a trailer. You pay for the space you use, which makes smaller and more frequent shipments affordable.",
       "We pick up and deliver your skids without transferring them through a warehouse, so the freight is handled less and arrives sooner.",
-      "If a partial load is urgent, we can put it on a dedicated truck.",
-    ],
-  },
-  {
-    id: "expedited-freight",
-    title: "Expedited freight",
-    abbr: null,
-    summary: "Time-critical loads, with an update at every step.",
-    bestFor: "Production parts, delivery appointments and hard deadlines.",
-    image: "/images/truck1.jpeg",
-    body: [
-      "When a load has a deadline, communication matters as much as driving. You get a confirmation when the freight is loaded, updates while it's on the road and proof of delivery as soon as it's signed for.",
-      "If the estimated arrival changes, we tell you right away, so you hear it from us before the consignee does.",
-    ],
-  },
-  {
-    id: "emergency-shipping",
-    title: "Emergency shipping",
-    abbr: null,
-    summary: "Rush, same-day and next-day runs when something can't wait.",
-    bestFor: "Line-down situations, missed pickups and last-minute orders.",
-    image: "/images/truck2.jpeg",
-    body: [
-      "A line is down, a pickup was missed, a customer needs it tomorrow. Call dispatch at any hour and we'll tell you straight away whether we can cover it.",
-      "We run rush, same-day and next-day deliveries, and can dedicate a truck to your load.",
+      "If a partial load can't share a trailer, we can put it on a dedicated truck.",
     ],
   },
 ];

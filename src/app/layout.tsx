@@ -15,7 +15,7 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: "Shehwaz Transport Inc. | Windsor Trucking & Cross-Border Logistics",
   description:
-    "Family-owned trucking company in Windsor, Ontario. Shehwaz Transport Inc. provides reliable FTL, LTL, and expedited freight services to Detroit, Michigan, Toronto, and across North America.",
+    "Trucking company in Windsor, Ontario. Shehwaz Transport Inc. provides reliable FTL and LTL freight services to Detroit, Michigan, Toronto, and across North America.",
   keywords: [
     "Shehwaz Transport",
     "Trucking Company Windsor",
@@ -24,8 +24,6 @@ export const metadata: Metadata = {
     "Freight Shipping Ontario",
     "FTL Carrier Canada",
     "LTL Shipping USA",
-    "Expedited Freight Michigan",
-    "Emergency Shipping Toronto",
     "Windsor to Detroit Trucking",
     "Canada USA Logistics",
     "Reliable Trucking Company",
@@ -69,7 +67,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Shehwaz Transport Inc. | Windsor Trucking & Cross-Border Logistics",
     description:
-      "Trusted trucking company in Windsor, Ontario. Shehwaz Transport Inc. offers reliable FTL, LTL, and expedited freight services across Canada and the USA.",
+      "Trusted trucking company in Windsor, Ontario. Shehwaz Transport Inc. offers reliable FTL and LTL freight services across Canada and the USA.",
     url: "https://shehwaztransport.ca",
     siteName: "Shehwaz Transport Inc.",
     images: [
@@ -86,7 +84,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Shehwaz Transport Inc. | Windsor Trucking & Cross-Border Logistics",
-    description: "Trusted trucking company in Windsor, Ontario. Shehwaz Transport Inc. offers reliable FTL, LTL, and expedited freight services across Canada and the USA.",
+    description: "Trusted trucking company in Windsor, Ontario. Shehwaz Transport Inc. offers reliable FTL and LTL freight services across Canada and the USA.",
     images: ["/opengraph-image.png"],
   },
   category: "logistics",
@@ -183,7 +181,7 @@ export default function RootLayout({
       "opens": "00:00",
       "closes": "23:59"
     },
-    "description": "Shehwaz Transport Inc. is a family-owned trucking company based in Windsor, Ontario, specializing in cross-border freight, FTL, LTL, and expedited shipping."
+    "description": "Shehwaz Transport Inc. is a trucking company based in Windsor, Ontario, specializing in cross-border freight, FTL and LTL shipping."
   };
 
   return (

@@ -30,7 +30,7 @@ Windsor–Detroit cross-border trucking. The company is based at the border, so 
 
 ## Capabilities and Constraints
 
-- Services offered: FTL full truckload, LTL less than truckload, expedited freight, emergency shipping (rush, same-day, next-day). Dry van and intermodal, local and long haul, Canada and USA.
+- Services offered: FTL full truckload and LTL less than truckload only. No rush, expedited or emergency delivery: do not offer or imply it. Dry van and intermodal, local and long haul, Canada and USA.
 - Fleet: 4 trucks, dry van. Based in Windsor, ON.
 - Dispatch is staffed 24/7, 365 days a year.
 - Contact: phone +1 (416) 908-8377, email dispatch@shehwaztransport.ca, location Windsor, ON, Canada (no street address published). Canonical source: `src/lib/data.ts`.
@@ -39,7 +39,7 @@ Windsor–Detroit cross-border trucking. The company is based at the border, so 
 
 ## Brand Commitments
 
-- Name: Shehwaz Transport Inc. Small, family-owned operation.
+- Name: Shehwaz Transport Inc. Small operation. It is NOT family-owned: never say so.
 - Tagline, from the business card: "Hauling Solutions You Can Trust".
 - Truck livery: white cab, royal-blue fenders, chrome.
 - Logo assets: `public/images/logo-full.png`, `public/images/logo.jpeg`, plus icons in `public/`.
@@ -47,7 +47,7 @@ Windsor–Detroit cross-border trucking. The company is based at the border, so 
 ## Evidence on Hand
 
 - Confirmed claims the owner stands behind: 99% on-time delivery, 100% client satisfaction, 24/7 dispatch, 4-truck dry van fleet, Windsor-based.
-- Real photography: trucks (`public/images/truck1.jpeg`, `truck2.jpeg`, `truck3.jpeg`) and `public/images/info.jpeg`. The owner's portrait was removed at the family's request; do not show him.
+- Real photography: trucks (`public/images/truck1.jpeg`, `truck2.jpeg`, `truck3.jpeg`) and `public/images/info.jpeg`. The owner's portrait was removed at the owner's request; do not show him.
 - No testimonials, named customers, case studies, certifications, or authority numbers (e.g. MC/DOT/CVOR) are on hand. Do not invent them.
 
 ## Product Principles
@@ -55,5 +55,5 @@ Windsor–Detroit cross-border trucking. The company is based at the border, so 
 1. Lead with the border. Cross-border Windsor–Detroit capability is the reason to choose this carrier over another one.
 2. Make dispatch easy to reach. The phone number and quote path should never be more than a glance away.
 3. Prove it's real. Real trucks, a real founder and real contact details carry more weight than polished generic claims.
-4. Be honest about size. A 4-truck family operation offers direct contact and accountability; don't dress it up as a mega-carrier.
+4. Be honest about size. A 4-truck operation offers direct contact and accountability; don't dress it up as a mega-carrier.
 5. Speak to drivers too. The site should read as a credible employer, not just a vendor.

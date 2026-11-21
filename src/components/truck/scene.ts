@@ -8,7 +8,7 @@ import { makeEnvironment, makeLens, makeRiver, makeRoad, makeTown, pickTier } fr
  * surroundings in world.ts; this file holds the camera and the story.
  *
  * The scene is driven by one number, the chapter position `c`:
- *   0 hero · 1 full truckload · 2 less than truckload · 3 expedited and emergency · 4 the border
+ *   0 hero · 1 full truckload · 2 less than truckload · 3 on time, at speed · 4 the border
  */
 
 const NAVY = 0x071738;
@@ -289,7 +289,7 @@ export function createTruckScene(
     const introE = 1 - Math.pow(1 - intro, 4);
     const introX = -(1 - introE) * 15;
 
-    // Up to speed for the rush chapter, then easing to a stand on the bridge.
+    // Up to speed for the on-time chapter, then easing to a stand on the bridge.
     const wantSpeed = opts.reducedMotion ? 0 : 28 * smooth(2.45, 3, cur) * (1 - smooth(3.5, 3.95, cur));
     speed += (wantSpeed - speed) * (1 - Math.exp(-dt * 3));
     if (speed < 0.02 && wantSpeed === 0) speed = 0;
