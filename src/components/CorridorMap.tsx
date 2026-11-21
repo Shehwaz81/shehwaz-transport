@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { places } from "@/lib/data";
 import { border, cities, labels, lakes, mapSize, rivers, routes } from "@/lib/mapData";
 
 type RouteKey = keyof typeof routes;
@@ -14,8 +15,11 @@ const onward = (d: string) => d.replace(/^M[^C]*/, "");
 const fork = routes.qew.d.match(/[\d.]+/g)!.slice(0, 2).map(Number); // where the 403 leaves the 401
 const { hwy401, i75s, i94, i96, qew, turnpike } = routes;
 
-// Approximate road distances from the Windsor–Detroit crossing.
-const destinations = [
+// Approximate road distances from Windsor. Detroit is the crossing itself: on the map it is the
+// same dot as Windsor, so it is drawn in the enlarged view of the crossing instead.
+type Destination = { name: string; via: string; km: number; mi: number; trip?: string; end?: number[] };
+const destinations: Destination[] = [
+  { name: "Detroit", via: "Ambassador Bridge", km: 5, mi: 3 },
   { name: "London", via: "Hwy 401", km: 190, mi: 120, trip: until(hwy401.d, cities.london) },
   { name: "Toronto", via: "Hwy 401", km: 370, mi: 230, trip: hwy401.d },
   { name: "Buffalo", via: "Hwy 401, 403, QEW", km: 400, mi: 250, trip: until(hwy401.d, fork) + onward(qew.d) },
@@ -23,11 +27,13 @@ const destinations = [
   { name: "Cleveland", via: "I-75, I-80/90", km: 270, mi: 170, trip: i75s.d + onward(turnpike.d) },
   { name: "Grand Rapids", via: "I-96", km: 255, mi: 160, trip: i96.d },
   { name: "Chicago", via: "I-94", km: 455, mi: 285, trip: i94.d },
-].map((d) => ({ ...d, end: d.trip.match(/[\d.]+/g)!.slice(-2).map(Number) }));
+].map((d: Destination) => ({ ...d, end: d.trip?.match(/[\d.]+/g)!.slice(-2).map(Number) }));
+/** "Detroit" as the quote form writes it: "Detroit, MI". */
+const placeOf = (name: string) => places.find((p) => p.startsWith(`${name},`)) ?? name;
 
 // [city, label, dx, dy, anchor, hide on small screens]
 const cityLabels: [keyof typeof cities, string, number, number, "start" | "middle" | "end", boolean][] = [
-  ["toronto", "Toronto", 12, 26, "start", false],
+  ["toronto", "Toronto", 0, 30, "middle", false],
   ["london", "London", -10, -12, "end", false],
   ["buffalo", "Buffalo", 0, 30, "middle", false],
   ["cleveland", "Cleveland", 0, 30, "middle", false],
@@ -57,6 +63,9 @@ export function CorridorMap() {
   const [peek, setPeek] = useState<number | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
   const hot = peek ?? picked;
+  // A road draws itself only when the map goes from nothing chosen to something chosen by pointer.
+  // Moving on to the next city, coming back to the kept one, or arriving by keyboard shows it at once.
+  const [atOnce, setAtOnce] = useState(false);
 
   // The map arrives drawn. If it has not been seen yet, hold the highways back and draw them when it is.
   useEffect(() => {
@@ -79,14 +88,19 @@ export function CorridorMap() {
   }, []);
 
   const trip = hot === null ? null : destinations[hot];
+  const across = trip !== null && !trip.trip; // Detroit: over the bridge, not along a highway
+  const now = atOnce ? " map-trip-now" : "";
   const [cx, cy] = cities.crossing;
 
   return (
     <div ref={ref} data-phase={phase} className="map grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-center lg:gap-14">
+      {/* On a phone the list is longer than the screen, so the map stays pinned under the header:
+          tap a city anywhere in the list and its road is still in view. */}
+      <div className="max-sm:sticky max-sm:top-16 max-sm:z-10 max-sm:-mx-5 max-sm:bg-navy-deep max-sm:px-5 max-sm:pt-3 max-sm:pb-2 max-sm:after:pointer-events-none max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:top-full max-sm:after:h-5 max-sm:after:bg-gradient-to-b max-sm:after:from-navy-deep max-sm:after:to-transparent max-sm:after:content-['']">
       <svg
         viewBox={`0 0 ${mapSize.w} ${mapSize.h}`}
         role="img"
-        aria-label="Map of the Great Lakes region. Highways fan out from the Windsor–Detroit crossing: Highway 401 east to London and Toronto, I-75 south to Toledo and north to Flint, I-94 west to Chicago, and I-96 to Grand Rapids."
+        aria-label="Map of the Great Lakes region. Detroit is across the river from Windsor, and highways fan out from the crossing: Highway 401 east to London and Toronto, I-75 south to Toledo and north to Flint, I-94 west to Chicago, and I-96 to Grand Rapids."
         className="w-full overflow-hidden rounded-plate bg-navy"
       >
         <g className="fill-navy-deep">
@@ -139,8 +153,8 @@ export function CorridorMap() {
         </g>
 
         {/* under the city names, so the chosen road never crosses the lettering */}
-        {trip && (
-          <path key={`road-${trip.name}`} d={trip.trip} pathLength={1} fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" className="map-trip-line stroke-amber" />
+        {trip?.trip && (
+          <path key={`road-${trip.name}`} d={trip.trip} pathLength={1} fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" className={`map-trip-line stroke-amber${now}`} />
         )}
 
         <g className="map-fade">
@@ -157,7 +171,7 @@ export function CorridorMap() {
           })}
         </g>
 
-        {trip && <circle key={`dot-${trip.name}`} cx={trip.end[0]} cy={trip.end[1]} r="7" strokeWidth="3" className="map-trip-dot fill-amber stroke-navy-deep" />}
+        {trip?.end && <circle key={`dot-${trip.name}`} cx={trip.end[0]} cy={trip.end[1]} r="7" strokeWidth="3" className={`map-trip-dot fill-amber stroke-navy-deep${now}`} />}
 
         {/* The crossing, enlarged. Detroit really is north of Windsor here. */}
         <g className="map-fade max-sm:hidden">
@@ -169,44 +183,72 @@ export function CorridorMap() {
             <rect x="790" y="485" width="180" height="180" className="fill-navy-raised" />
             <path d="M790 566 C 840 552, 900 596, 970 560 L970 600 C 900 636, 840 590, 790 606 Z" className="fill-navy-deep" />
             <line x1="872" y1="534" x2="888" y2="628" strokeWidth="5" strokeLinecap="round" className="stroke-white" />
+            {across && <line x1="888" y1="628" x2="872" y2="534" pathLength={1} strokeWidth="5" strokeLinecap="round" className={`map-trip-line stroke-amber${now}`} />}
             <circle cx="872" cy="534" r="6" className="fill-white" />
+            {across && <circle cx="872" cy="534" r="8" strokeWidth="3" className={`map-trip-dot fill-amber stroke-navy-deep${now}`} />}
             <circle cx="888" cy="628" r="6" className="fill-amber" />
             <text x="885" y="530" className="map-inset fill-white">Detroit</text>
             <text x="875" y="625" textAnchor="end" className="map-inset fill-white">Windsor</text>
           </g>
-          <circle cx="880" cy="575" r="86" fill="none" strokeWidth="2" className="stroke-amber" />
+          <circle cx="880" cy="575" r="86" fill="none" strokeWidth={across ? 4 : 2} className="map-ring stroke-amber" />
         </g>
+
+        {/* on a phone the enlarged view is too small to show, so the crossing itself answers */}
+        {across && <circle cx={cx} cy={cy} r="18" strokeWidth="3" className={`map-trip-dot fill-none stroke-amber${now}`} />}
 
         <circle cx={cx} cy={cy} r="12" className="map-ping fill-none stroke-amber" strokeWidth="2" />
         <circle cx={cx} cy={cy} r="9" className="fill-amber stroke-navy-deep" strokeWidth="3" />
-        <text x={cx + 16} y={cy + 34} className="map-home fill-white">
+        <text x={cx + 16} y={cy + 34} className={`map-home ${across ? "fill-amber" : "fill-white"}`}>
           Windsor–Detroit
         </text>
       </svg>
+      </div>
 
-      <div onPointerLeave={(e) => e.pointerType === "mouse" && setPeek(null)}>
-        <h3 className="font-semibold text-mist">Road distance from the crossing</h3>
+      <div
+        onPointerLeave={(e) => {
+          if (e.pointerType !== "mouse") return;
+          setAtOnce(true);
+          setPeek(null);
+        }}
+      >
+        <h3 className="font-semibold text-mist">Approximate road distance from Windsor</h3>
         <ul className="mt-3 border-t border-white/15">
           {destinations.map((d, i) => (
             <li key={d.name} className="border-b border-white/15">
               <button
                 type="button"
                 aria-pressed={picked === i}
-                onPointerEnter={(e) => e.pointerType === "mouse" && setPeek(i)}
-                onFocus={() => setPeek(i)}
-                onBlur={() => setPeek((p) => (p === i ? null : p))}
+                onPointerEnter={(e) => {
+                  if (e.pointerType !== "mouse") return;
+                  setAtOnce(hot !== null);
+                  setPeek(i);
+                }}
+                onFocus={(e) => {
+                  if (e.currentTarget.matches(":focus-visible")) setAtOnce(true);
+                  setPeek(i);
+                }}
+                onBlur={() => {
+                  setAtOnce(true);
+                  setPeek((p) => (p === i ? null : p));
+                }}
                 onClick={() => {
+                  if (hot !== i) setAtOnce(hot !== null);
                   setPicked(picked === i ? null : i);
                   if (picked === i) setPeek(null);
                 }}
-                className="group flex w-full items-baseline justify-between gap-4 py-3 text-left"
+                className="flex w-full items-center gap-3 py-3 text-left active:bg-white/[0.06]"
               >
-                <span>
+                {/* the same marker the city has on the map: ringed when pointed at, filled when kept */}
+                <span
+                  aria-hidden
+                  className={`size-2.5 shrink-0 rounded-full border-2 transition-colors duration-150 ${picked === i ? "border-amber bg-amber" : hot === i ? "border-amber" : "border-white/60"}`}
+                />
+                <span className="min-w-0 flex-1">
                   <span className={`display text-2xl transition-colors duration-150 ${hot === i ? "text-amber" : "text-white"}`}>{d.name}</span>
-                  <span className="ml-3 text-sm text-mist">{d.via}</span>
+                  <span className="ml-3 text-sm text-mist max-sm:ml-0 max-sm:block">{d.via}</span>
                 </span>
-                <span className="shrink-0 text-right text-mist tabular-nums">
-                  about {d.km} km <span className="max-sm:block">({d.mi} mi)</span>
+                <span className="shrink-0 text-right text-white tabular-nums">
+                  {d.km} km <span className="text-mist">· {d.mi} mi</span>
                 </span>
               </button>
             </li>
@@ -214,8 +256,8 @@ export function CorridorMap() {
         </ul>
         <a
           href="#quote"
-          onClick={() => hot !== null && window.dispatchEvent(new CustomEvent("quote-lane", { detail: destinations[hot].name }))}
-          className="btn btn-light mt-6 w-full sm:w-auto"
+          onClick={() => hot !== null && window.dispatchEvent(new CustomEvent("quote-lane", { detail: placeOf(destinations[hot].name) }))}
+          className="btn btn-light mt-6 w-full"
         >
           {hot === null ? "Get a quote for your lane" : `Get a quote to ${destinations[hot].name}`}
         </a>

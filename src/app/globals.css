@@ -432,6 +432,18 @@
   animation: fade 160ms ease 160ms both;
 }
 
+/* Once a road is showing, the next one is simply there: like tooltips, only the first is animated. */
+.map-trip-now {
+  animation: none;
+}
+
+.map-ring,
+.map-home {
+  transition:
+    stroke-width 150ms ease,
+    fill 150ms ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

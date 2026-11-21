@@ -72,3 +72,16 @@ export const services = [
     ],
   },
 ];
+
+// The lanes on the map, as the quote form offers them. Any other city can still be typed in.
+export const places = [
+  "Windsor, ON",
+  "Detroit, MI",
+  "London, ON",
+  "Toronto, ON",
+  "Buffalo, NY",
+  "Toledo, OH",
+  "Cleveland, OH",
+  "Grand Rapids, MI",
+  "Chicago, IL",
+];

@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { requestQuote, type QuoteState } from "@/app/actions";
-import { company, services } from "@/lib/data";
+import { company, places, services } from "@/lib/data";
 
 const initial: QuoteState = { status: "idle" };
 const today = () => new Date().toLocaleDateString("en-CA"); // yyyy-mm-dd in local time
@@ -30,7 +30,10 @@ export function QuoteForm() {
       const form = formRef.current;
       if (!form) return;
       (form.elements.namedItem("delivery") as HTMLInputElement).value = (ev as CustomEvent<string>).detail;
-      (form.elements.namedItem("pickup") as HTMLInputElement).focus({ preventScroll: true });
+      // The link's own jump to the form takes focus after this runs, so the pickup field is focused a
+      // moment later. Not on touch screens: there it would raise the keyboard over a page still scrolling.
+      if (window.matchMedia("(pointer: fine)").matches)
+        setTimeout(() => (form.elements.namedItem("pickup") as HTMLInputElement).focus({ preventScroll: true }), 0);
     };
     window.addEventListener("quote-lane", onLane);
     return () => window.removeEventListener("quote-lane", onLane);
@@ -94,8 +97,13 @@ export function QuoteForm() {
     >
       <fieldset className="grid gap-5 sm:grid-cols-2">
         <legend className="display mb-5 text-2xl">The load</legend>
-        {field("pickup", "Pickup city", { required: true, placeholder: "Windsor, ON" })}
-        {field("delivery", "Delivery city", { required: true, placeholder: "Detroit, MI" })}
+        {field("pickup", "Pickup city", { required: true, placeholder: "Windsor, ON", list: "places" })}
+        {field("delivery", "Delivery city", { required: true, placeholder: "Detroit, MI", list: "places" })}
+        <datalist id="places">
+          {places.map((p) => (
+            <option key={p} value={p} />
+          ))}
+        </datalist>
         {field("date", "Pickup date", { type: "date", min: today(), optional: true })}
         <div>
           <label htmlFor="service" className="mb-1.5 block text-sm font-semibold">
