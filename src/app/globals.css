@@ -311,15 +311,20 @@
   }
 }
 
-/* Night haze behind the border chapter's copy: over the top of the frame on a phone,
-   a pool around the copy on wider screens so the truck below it stays lit. */
+/* Night haze in the border chapter. Behind the copy: over the top of the frame on a phone, a
+   pool round it on wider screens so the truck below stays lit. And along the foot, so the
+   bridge towers sink into the dark instead of being cut off where the next section starts. */
 .copy-scrim {
-  background: linear-gradient(to bottom, var(--color-navy-deep), rgb(7 23 56 / 0.85) 45%, transparent 70%);
+  background:
+    linear-gradient(to top, var(--color-navy-deep) 4%, transparent 22%),
+    linear-gradient(to bottom, var(--color-navy-deep), rgb(7 23 56 / 0.85) 45%, transparent 70%);
 }
 
 @media (min-width: 48rem) {
   .copy-scrim {
-    background: radial-gradient(ellipse 40% 40% at 25% 41%, rgb(7 23 56 / 0.94) 55%, transparent);
+    background:
+      linear-gradient(to top, var(--color-navy-deep) 3%, transparent 20%),
+      radial-gradient(ellipse 40% 40% at 25% 41%, rgb(7 23 56 / 0.94) 55%, transparent);
   }
 }
 

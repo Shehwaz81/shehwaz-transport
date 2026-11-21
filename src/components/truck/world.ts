@@ -160,6 +160,7 @@ export function makeRoad(truck: THREE.Object3D, tier: Tier): Road {
     tMirror: { value: null as THREE.Texture | null },
     uMirror: { value: new THREE.Matrix4() },
     uMirrorOn: { value: 0 },
+    uEdge: { value: 1e6 }, // metres from the centre line at which the road ends
   };
   if (tier.mirror > 0) {
     mirror = new Reflector(keep(new THREE.PlaneGeometry(SIZE, SIZE)), { textureWidth: 512, textureHeight: 256, multisample: 0, clipBias: 0.002 });
@@ -179,10 +180,10 @@ export function makeRoad(truck: THREE.Object3D, tier: Tier): Road {
   mat.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nuniform mat4 uMirror;\nvarying vec4 vMirror;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvMirror = uMirror * vec4( transformed, 1.0 );");
+      .replace("#include <common>", "#include <common>\nuniform mat4 uMirror;\nvarying vec4 vMirror;\nvarying float vAcross;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvMirror = uMirror * vec4( transformed, 1.0 );\nvAcross = ( modelMatrix * vec4( transformed, 1.0 ) ).z;");
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform sampler2D tMirror;\nuniform float uMirrorOn;\nvarying vec4 vMirror;")
+      .replace("#include <common>", "#include <common>\nuniform sampler2D tMirror;\nuniform float uMirrorOn;\nuniform float uEdge;\nvarying vec4 vMirror;\nvarying float vAcross;")
       // standing water lies flat whatever the stones under it do
       .replace("#include <normal_fragment_maps>", "#include <normal_fragment_maps>\nfloat wet = 1.0 - roughnessFactor;\nnormal = normalize( mix( normal, nonPerturbedNormal, wet * wet ) );")
       .replace(
@@ -195,7 +196,8 @@ export function makeRoad(truck: THREE.Object3D, tier: Tier): Road {
           float fres = pow( 1.0 - saturate( dot( normalize( vViewPosition ), normal ) ), 3.0 );
           outgoingLight += mir * uMirrorOn * mix( 0.04, 0.8, fres ) * ( 0.1 + 0.9 * wet * wet );
         }
-        #include <opaque_fragment>`,
+        #include <opaque_fragment>
+        gl_FragColor.a *= 1.0 - smoothstep( uEdge * 0.7, uEdge, abs( vAcross ) );`,
       );
   };
 
@@ -265,11 +267,19 @@ export function makeRoad(truck: THREE.Object3D, tier: Tier): Road {
       dashes.position.x = -(offset % DASH);
     },
     setSpan(span) {
+      // The open road does not dissolve all at once. It draws in from both sides until it is
+      // the width of the bridge deck, with the river showing past its edges, and only then
+      // gives way to the deck itself. Its reflections go first: there is no water up here.
       const on = span < 0.999;
       ground.visible = dashes.visible = edges.visible = on;
-      if (mirror) mirror.visible = on;
+      const gone = smooth(0.55, 1, span);
       mat.transparent = paint.transparent = span > 0.001;
-      mat.opacity = paint.opacity = 1 - span;
+      mat.opacity = paint.opacity = 1 - gone;
+      uniforms.uEdge.value = span > 0.001 ? lerp(420, 7.3, Math.pow(smooth(0, 0.6, span), 0.4)) : 1e6;
+      if (mirror) {
+        mirror.visible = span < 0.4;
+        uniforms.uMirrorOn.value = 1 - smooth(0, 0.35, span);
+      }
     },
     resize(w, h) {
       mirror?.getRenderTarget().setSize(Math.max(64, Math.round(w * tier.mirror)), Math.max(64, Math.round(h * tier.mirror)));
@@ -281,47 +291,127 @@ export function makeRoad(truck: THREE.Object3D, tier: Tier): Road {
   };
 }
 
-/** The town: lamps strung along the horizon, far enough off to blur into dots. They stream past at speed. */
+/**
+ * The town: lamps strung along the horizon, far enough off to blur into dots. They stream past at
+ * speed. There is one band each side of the road, kept apart because at the bridge the near one
+ * would sit between the camera and the truck, while the far one becomes the opposite bank.
+ */
 export function makeTown(glow: THREE.Texture) {
-  const N = 300;
   const SPAN = 380;
-  const pos = new Float32Array(N * 3);
-  const col = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    // two bands, one each side of the road, thicker in places
-    const side = i % 2 ? 1 : -1;
-    const along = (hash(i * 3.1) * 2 - 1) * SPAN;
-    const cluster = 0.35 + 0.65 * smooth(0.35, 0.75, hash(Math.floor(along / 60) * 7.7 + side));
-    pos[i * 3] = along;
-    pos[i * 3 + 1] = 1.5 + Math.pow(hash(i * 5.3), 2.2) * 22 * cluster;
-    pos[i * 3 + 2] = side * (120 + hash(i * 9.7) * 170);
-    const kind = hash(i * 2.3);
-    const lum = (0.35 + hash(i * 6.1) * 0.65) * cluster;
-    const c = kind < 0.68 ? [1, 0.6, 0.26] : kind < 0.9 ? [0.8, 0.88, 1] : [1, 0.16, 0.1];
-    col[i * 3] = c[0] * lum;
-    col[i * 3 + 1] = c[1] * lum;
-    col[i * 3 + 2] = c[2] * lum;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-  const mat = new THREE.PointsMaterial({ map: glow, size: 5.5, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-  const points = new THREE.Points(geo, mat);
-  points.frustumCulled = false;
+  const band = (side: 1 | -1) => {
+    const N = 150;
+    const pos = new Float32Array(N * 3);
+    const col = new Float32Array(N * 3);
+    for (let k = 0; k < N; k++) {
+      const i = k * 2 + (side === 1 ? 1 : 0);
+      const along = (hash(i * 3.1) * 2 - 1) * SPAN;
+      const cluster = 0.35 + 0.65 * smooth(0.35, 0.75, hash(Math.floor(along / 60) * 7.7 + side)); // thicker in places
+      pos[k * 3] = along;
+      pos[k * 3 + 1] = 1.5 + Math.pow(hash(i * 5.3), 2.2) * 22 * cluster;
+      pos[k * 3 + 2] = side * (170 + hash(i * 9.7) * 170);
+      const kind = hash(i * 2.3);
+      const lum = (0.35 + hash(i * 6.1) * 0.65) * cluster;
+      const c = kind < 0.68 ? [1, 0.6, 0.26] : kind < 0.9 ? [0.8, 0.88, 1] : [1, 0.16, 0.1];
+      col[k * 3] = c[0] * lum;
+      col[k * 3 + 1] = c[1] * lum;
+      col[k * 3 + 2] = c[2] * lum;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    const mat = new THREE.PointsMaterial({ map: glow, size: 5.5, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+    const points = new THREE.Points(geo, mat);
+    points.frustumCulled = false;
+    return { points, mat, geo, pos, N };
+  };
+  const near = band(-1);
+  const far = band(1);
   return {
-    points,
-    mat,
+    near,
+    far,
     roll(travel: number) {
-      for (let i = 0; i < N; i++) {
-        let x = pos[i * 3] - travel;
-        if (x < -SPAN) x += SPAN * 2;
-        pos[i * 3] = x;
+      for (const b of [near, far]) {
+        for (let i = 0; i < b.N; i++) {
+          let x = b.pos[i * 3] - travel;
+          if (x < -SPAN) x += SPAN * 2;
+          b.pos[i * 3] = x;
+        }
+        b.geo.attributes.position.needsUpdate = true;
       }
-      geo.attributes.position.needsUpdate = true;
     },
     dispose() {
-      geo.dispose();
+      for (const b of [near, far]) {
+        b.geo.dispose();
+        b.mat.dispose();
+      }
+    },
+  };
+}
+
+/**
+ * The river under the bridge. It is the night colour itself with a sheen laid on it, so it
+ * needs no blending to arrive: at strength 0 it is invisible, and it fades back to the night
+ * before the bottom of the picture and before the horizon. Nothing lights it, so no lamp in the
+ * scene can throw a glint across it; the warm band is the far bank's town on the water.
+ */
+export function makeRiver(level: number, night: THREE.Color) {
+  const N = 256;
+  const field = noiseField(N, 6, 4, 21);
+  const ripples = texture(
+    canvas(N, N, (ctx) => {
+      const img = ctx.createImageData(N, N);
+      for (let i = 0; i < N * N; i++) {
+        img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = field[i] * 255;
+        img.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    }),
+    { aniso: 16 },
+  );
+  const mat = new THREE.ShaderMaterial({
+    fog: false,
+    uniforms: { uNight: { value: night }, tRipples: { value: ripples }, uStrength: { value: 0 } },
+    vertexShader: `
+      varying vec3 vWorld;
+      void main() {
+        vec4 wp = modelMatrix * vec4( position, 1.0 );
+        vWorld = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: `
+      uniform vec3 uNight;
+      uniform sampler2D tRipples;
+      uniform float uStrength;
+      varying vec3 vWorld;
+      void main() {
+        float z = vWorld.z;
+        // long low swells, stretched along the river
+        float a = texture2D( tRipples, vWorld.xz * vec2( 0.0035, 0.018 ) ).r;
+        float b = texture2D( tRipples, vWorld.xz * vec2( 0.011, 0.06 ) + 0.37 ).r;
+        float swell = smoothstep( 0.4, 0.72, a * 0.6 + b * 0.4 );
+        float reach = smoothstep( 70.0, 170.0, z ) * ( 1.0 - smoothstep( 320.0, 640.0, z ) ) * ( 1.0 - smoothstep( 280.0, 520.0, abs( vWorld.x + 14.0 ) ) );
+        vec3 sheen = vec3( 0.022, 0.034, 0.064 ) * ( 0.3 + 0.7 * swell );
+        // the far bank's lamps, drawn out on the water in front of them
+        float bank = smoothstep( 150.0, 250.0, z ) * ( 1.0 - smoothstep( 250.0, 330.0, z ) );
+        vec3 town = vec3( 0.085, 0.045, 0.016 ) * bank * ( 0.25 + 0.75 * b );
+        gl_FragColor = vec4( uNight + ( sheen + town ) * reach * uStrength, 1.0 );
+        #include <colorspace_fragment>
+      }`,
+  });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), mat);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = level;
+  mesh.visible = false;
+  return {
+    mesh,
+    setStrength(k: number) {
+      mesh.visible = k > 0.001;
+      mat.uniforms.uStrength.value = k;
+    },
+    dispose() {
+      mesh.geometry.dispose();
       mat.dispose();
+      ripples.dispose();
     },
   };
 }
@@ -331,14 +421,18 @@ export function makeLens(renderer: THREE.WebGLRenderer, scene: THREE.Scene, came
   const target = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: tier.msaa });
   const composer = new EffectComposer(renderer, target);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.22, 0.5, 2.8);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.22, 0.5, 1.9);
+  // A wide shoulder instead of a cutoff: a lamp a few pixels across lands on different pixels
+  // every frame, and with a hard threshold its halo would switch on and off as the camera moves.
+  (bloom.highPassUniforms as Record<string, THREE.IUniform>).smoothWidth.value = 1.8;
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   return {
     render: () => composer.render(),
-    /** 1 = close work. A lamp's halo is a fixed size on screen, so it is turned down as the truck gets small. */
+    /** 1 = close work, 0 = none. A halo is a fixed size on screen, so it goes as the truck gets small. */
     setGlow(k: number) {
       bloom.strength = 0.22 * k;
+      bloom.enabled = k > 0.01;
     },
     resize(w: number, h: number) {
       composer.setPixelRatio(tier.dpr);

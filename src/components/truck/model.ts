@@ -28,7 +28,8 @@ export type Rig = {
   setClear: (clear: number) => boolean;
   setGhost: (ghost: number) => void;
   setLoaded: (loaded: number) => void;
-  setNight: (night: number) => void;
+  /** How bright the headlamps are, and where the camera is, so each glow can fade as it turns away. */
+  setLamps: (night: number, camX: number, camZ: number) => void;
   dispose: () => void;
 };
 
@@ -690,17 +691,23 @@ export function buildRig(o: { logoUrl: string; fontFamily: string; glow: THREE.T
   });
 
   // ---- lamp glows ----------------------------------------------------------
-  const flare = (color: number, size: number, x: number, y: number, z: number) => {
-    const m = keep(new THREE.SpriteMaterial({ map: o.glow, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  // A glow is a flat sprite, so it cannot be half hidden behind the cab without looking cut off.
+  // Instead it ignores what is in front of it and dims by angle: full when the lamp faces the
+  // camera, gone by the time the camera is side-on.
+  const flares: { m: THREE.SpriteMaterial; x: number; z: number; face: 1 | -1; base: number; head: boolean }[] = [];
+  const flare = (color: number, size: number, x: number, y: number, z: number, face: 1 | -1, base: number, head = false) => {
+    const m = keep(new THREE.SpriteMaterial({ map: o.glow, color, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true, opacity: 0 }));
     const s = new THREE.Sprite(m);
     s.scale.setScalar(size);
     s.position.set(x, y, z);
+    s.renderOrder = 5;
     body.add(s);
-    return m;
+    flares.push({ m, x, z, face, base, head });
   };
-  const headGlows = [flare(0xfff0c8, 1.25, 4.0, 1.13, 1.07), flare(0xfff0c8, 1.25, 4.0, 1.13, -1.07), flare(0xfff0c8, 0.6, 3.98, 1.13, 0.86), flare(0xfff0c8, 0.6, 3.98, 1.13, -0.86)];
-  for (const z of [0.99, -0.99, 0.78, -0.78]) flare(0xff2a10, 0.42, TX0 - 0.09, 1.24, z).opacity = 0.45;
-  for (const z of [-0.92, -0.46, 0, 0.46, 0.92]) flare(0xff9a00, 0.22, 2.07, 3.05, z).opacity = 0.5;
+  for (const z of [1.07, -1.07]) flare(0xfff0c8, 1.25, 4.0, 1.13, z, 1, 0.22, true);
+  for (const z of [0.86, -0.86]) flare(0xfff0c8, 0.6, 3.98, 1.13, z, 1, 0.22, true);
+  for (const z of [0.99, -0.99, 0.78, -0.78]) flare(0xff2a10, 0.42, TX0 - 0.09, 1.24, z, -1, 0.45);
+  for (const z of [-0.92, -0.46, 0, 0.46, 0.92]) flare(0xff9a00, 0.22, 2.07, 3.05, z, 1, 0.5);
 
   // ---- freight -------------------------------------------------------------
   const palletGeo = keep(merged([
@@ -778,9 +785,13 @@ export function buildRig(o: { logoUrl: string; fontFamily: string; glow: THREE.T
       cartonGhost.depthWrite = palletGhost.depthWrite = ghost < 0.05;
     },
     setLoaded,
-    setNight(night) {
+    setLamps(night, camX, camZ) {
       M.lamp.emissiveIntensity = 3 + 3 * night;
-      for (const g of headGlows) g.opacity = 0.22 * night;
+      for (const f of flares) {
+        const dx = camX - (truck.position.x + f.x);
+        const facing = (dx / Math.hypot(dx, camZ - f.z)) * f.face;
+        f.m.opacity = f.base * (f.head ? night : 1) * smooth(0, 0.5, facing);
+      }
     },
     dispose() {
       for (const d of made) d.dispose();

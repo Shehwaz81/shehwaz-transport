@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { box, canvas, cyl, lerp, merged, smooth } from "./kit";
 import { buildRig } from "./model";
-import { makeEnvironment, makeLens, makeRoad, makeTown, pickTier } from "./world";
+import { makeEnvironment, makeLens, makeRiver, makeRoad, makeTown, pickTier } from "./world";
 
 /*
  * Unit 878 on a wet road at night. The truck itself is in model.ts and its
@@ -56,13 +56,22 @@ export function createTruckScene(
   renderer.shadowMap.type = THREE.PCFShadowMap;
   // Nothing that casts a shadow moves once the truck has parked, so shadows are drawn on request.
   renderer.shadowMap.autoUpdate = false;
-  // Neutral keeps dark colours where they are, so the night meets the page's navy exactly.
+  // Neutral tone mapping leaves mid-tones alone, which keeps the paint honest.
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(NAVY);
-  const fog = new THREE.Fog(NAVY, 30, 96);
+  // Neutral does pull a dark colour's weakest channel to black, though, which turned the page's
+  // navy bluer in the picture and left a seam where the scene meets the next section. So the
+  // night starts from the colour that comes out of the lens as exactly that navy.
+  const night = new THREE.Color(NAVY);
+  {
+    const low = Math.min(night.r, night.g, night.b);
+    const lift = Math.sqrt(low / 6.25) - low;
+    night.setRGB(night.r + lift, night.g + lift, night.b + lift);
+  }
+  scene.background = night;
+  const fog = new THREE.Fog(night, 30, 96);
   scene.fog = fog;
   const envRT = makeEnvironment(renderer);
   scene.environment = envRT.texture;
@@ -95,12 +104,11 @@ export function createTruckScene(
   sc.far = 70;
   key.target.position.set(-6, 0, 0);
   scene.add(key, key.target);
-  // edge light from behind, and the town's sodium from low on the far side
+  // Edge light from behind. (The town's sodium colour comes from the reflections alone: as a
+  // low lamp it threw a long orange glint across the wet road from some angles, like a setting sun.)
   const rim = new THREE.DirectionalLight(0xc4d4ff, 1.5);
   rim.position.set(-20, 10, -15);
-  const warm = new THREE.DirectionalLight(0xffa65c, 0.55);
-  warm.position.set(-4, 3, 20);
-  scene.add(rim, warm);
+  scene.add(rim);
   // a lamp standing over the road, so the truck is parked in something
   const pool = new THREE.SpotLight(0xe9eeff, 260, 70, 0.62, 1, 1.3);
   pool.position.set(-6, 30, 4);
@@ -132,7 +140,7 @@ export function createTruckScene(
   const road = makeRoad(truck, tier);
   scene.add(road.group);
   const town = makeTown(glowTex);
-  scene.add(town.points);
+  scene.add(town.near.points, town.far.points);
 
   // ---- the crossing ------------------------------------------------------
   // A suspension bridge that takes over from the open road in the last chapter.
@@ -180,11 +188,8 @@ export function createTruckScene(
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
     bridge.add(new THREE.Points(g, necklace));
   }
-  const water = new THREE.Mesh(track(new THREE.PlaneGeometry(900, 900)), track(new THREE.MeshStandardMaterial({ color: 0x030818, roughness: 0.25, metalness: 0.6, envMapIntensity: 0.5 })));
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = WATER;
-  water.visible = false;
-  scene.add(water);
+  const river = track(makeRiver(WATER, night));
+  scene.add(river.mesh);
 
   const lens = makeLens(renderer, scene, camera, tier);
 
@@ -287,13 +292,17 @@ export function createTruckScene(
 
     // the road gives way to the bridge
     const span = smooth(3.12, 3.65, cur);
-    bridge.visible = water.visible = span > 0.001;
+    bridge.visible = span > 0.001;
+    river.setStrength(span);
     road.setSpan(span);
     steel.opacity = deckMat.opacity = span;
     steel.transparent = deckMat.transparent = span < 0.999;
     necklace.opacity = span;
-    town.mat.opacity = 0.85 * (1 - span);
-    town.points.visible = span < 0.999;
+    // The near bank's lamps would hang in front of the lens at the bridge, so they go; the far
+    // bank's drop from the roadside to the water's edge and stay.
+    town.near.mat.opacity = 0.85 * (1 - span);
+    town.near.points.visible = span < 0.999;
+    town.far.points.position.y = (WATER + 2) * span;
     pool.intensity = 260 * (1 - 0.55 * span);
     bridge.position.x = (4 - Math.min(4, cur)) * 60;
 
@@ -310,9 +319,8 @@ export function createTruckScene(
     body.position.y = speed > 0 ? Math.sin(now / 90) * 0.006 * Math.min(1, speed / 20) : 0;
 
     // lamps
-    const night = 0.55 + 0.6 * smooth(2.5, 3, cur);
-    rig.setNight(night);
-    beam.intensity = 70 * night;
+    const dusk = 0.55 + 0.6 * smooth(2.5, 3, cur);
+    beam.intensity = 70 * dusk;
 
     // camera
     const p = pose(cur);
@@ -331,7 +339,9 @@ export function createTruckScene(
     camera.setViewOffset(w, h, -p.ox * w, p.oy * h, w, h);
     camera.updateProjectionMatrix();
 
-    lens.setGlow(Math.min(1, Math.max(0.3, 34 / dist)));
+    rig.setLamps(dusk, camera.position.x, camera.position.z);
+    // lamp halos are for close work: they are gone before the truck is small enough for them to flicker
+    lens.setGlow(1 - smooth(45, 95, dist));
     if (first || rolling || wallsChanged) renderer.shadowMap.needsUpdate = true;
     lens.render();
     if (first) {
