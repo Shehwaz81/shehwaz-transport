@@ -85,7 +85,7 @@ export function TruckStage({ chapters, children }: { chapters: string[]; childre
 
         <nav
           aria-label="Services shown in the scene"
-          className={`shell absolute inset-x-0 bottom-24 transition-opacity duration-200 md:bottom-10 ${active > 0 ? "opacity-100" : "pointer-events-none opacity-0"}`}
+          className={`shell absolute inset-x-0 bottom-20 transition-opacity duration-200 md:bottom-6 ${active > 0 ? "opacity-100" : "pointer-events-none opacity-0"}`}
         >
           <ol className="grid grid-cols-4 gap-2 sm:gap-4">
             {chapters.map((title, i) => (
@@ -95,7 +95,8 @@ export function TruckStage({ chapters, children }: { chapters: string[]; childre
                   onClick={() => jump(i)}
                   aria-current={active === i + 1 ? "step" : undefined}
                   tabIndex={active > 0 ? 0 : -1}
-                  className="group block w-full py-2 text-left"
+                  aria-label={title}
+                  className="group block w-full py-5 text-left"
                 >
                   <span className="relative block h-0.5 overflow-hidden bg-white/20">
                     <span

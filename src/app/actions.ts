@@ -46,10 +46,17 @@ export async function requestQuote(
 
   const errors: Record<string, string> = {};
   if (!values.name) errors.name = "Enter your name.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email))
-    errors.email = "Enter an email address we can reply to.";
-  if (values.phone.replace(/\D/g, "").length < 7)
-    errors.phone = "Enter a phone number dispatch can call.";
+  // Dispatch needs one way to reach the shipper; either is enough.
+  const digits = values.phone.replace(/\D/g, "").length;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email);
+  if (!values.email && !values.phone) {
+    errors.email = "Enter an email or a phone number so dispatch can reply.";
+  } else {
+    if (values.email && !emailOk) errors.email = "This email looks incomplete. Check it, or leave it blank and give a phone number.";
+    if (values.phone && digits < 10) errors.phone = "Enter the full number with area code, 10 digits.";
+  }
+  if (values.date && values.date < new Date(Date.now() - 864e5).toISOString().slice(0, 10))
+    errors.date = "This date has passed. Pick today or later.";
   if (!values.pickup) errors.pickup = "Enter the pickup city.";
   if (!values.delivery) errors.delivery = "Enter the delivery city.";
   if (Object.keys(errors).length) return { status: "invalid", errors, values };
@@ -78,7 +85,7 @@ export async function requestQuote(
       body: JSON.stringify({
         from,
         to: company.email,
-        reply_to: values.email,
+        ...(values.email ? { reply_to: values.email } : {}),
         subject,
         text,
       }),

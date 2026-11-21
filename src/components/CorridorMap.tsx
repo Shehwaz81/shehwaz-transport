@@ -6,14 +6,14 @@ import { border, cities, labels, lakes, mapSize, rivers, routes } from "@/lib/ma
 type RouteKey = keyof typeof routes;
 
 // Approximate road distances from the Windsor–Detroit crossing.
-const destinations: { name: string; via: string; km: number; routes: RouteKey[] }[] = [
-  { name: "London", via: "Hwy 401", km: 190, routes: ["hwy401"] },
-  { name: "Toronto", via: "Hwy 401", km: 370, routes: ["hwy401"] },
-  { name: "Buffalo", via: "Hwy 401, 403 and the QEW", km: 400, routes: ["hwy401", "qew"] },
-  { name: "Toledo", via: "I-75", km: 95, routes: ["i75s"] },
-  { name: "Cleveland", via: "I-75 and I-80/90", km: 270, routes: ["i75s", "turnpike"] },
-  { name: "Grand Rapids", via: "I-96", km: 255, routes: ["i96"] },
-  { name: "Chicago", via: "I-94", km: 455, routes: ["i94"] },
+const destinations: { name: string; via: string; km: number; mi: number; routes: RouteKey[] }[] = [
+  { name: "London", via: "Hwy 401", km: 190, mi: 120, routes: ["hwy401"] },
+  { name: "Toronto", via: "Hwy 401", km: 370, mi: 230, routes: ["hwy401"] },
+  { name: "Buffalo", via: "Hwy 401, 403, QEW", km: 400, mi: 250, routes: ["hwy401", "qew"] },
+  { name: "Toledo", via: "I-75", km: 95, mi: 60, routes: ["i75s"] },
+  { name: "Cleveland", via: "I-75, I-80/90", km: 270, mi: 170, routes: ["i75s", "turnpike"] },
+  { name: "Grand Rapids", via: "I-96", km: 255, mi: 160, routes: ["i96"] },
+  { name: "Chicago", via: "I-94", km: 455, mi: 285, routes: ["i94"] },
 ];
 
 // [city, label, dx, dy, anchor, hide on small screens]
@@ -23,13 +23,13 @@ const cityLabels: [keyof typeof cities, string, number, number, "start" | "middl
   ["buffalo", "Buffalo", 0, 30, "middle", false],
   ["cleveland", "Cleveland", 0, 30, "middle", false],
   ["toledo", "Toledo", -12, 6, "end", false],
-  ["chicago", "Chicago", -12, -12, "end", false],
+  ["chicago", "Chicago", 12, -14, "start", false],
   ["grandRapids", "Grand Rapids", 0, -14, "middle", true],
   ["flint", "Flint", -11, -4, "end", true],
   ["lansing", "Lansing", 0, 28, "middle", true],
 ];
 
-const order: RouteKey[] = ["hwy401", "i75s", "i94", "i75n", "i96", "turnpike", "qew"];
+const order: RouteKey[] = ["hwy401", "i75s", "i94", "i75n", "i96", "i75ohio", "turnpike", "qew"];
 
 export function CorridorMap() {
   const ref = useRef<HTMLDivElement>(null);
@@ -159,9 +159,9 @@ export function CorridorMap() {
         </text>
       </svg>
 
-      <div>
+      <div onPointerLeave={(e) => e.pointerType === "mouse" && setHot(null)}>
         <h3 className="font-semibold text-mist">Road distance from the crossing</h3>
-        <ul className="mt-3 border-t border-white/15" onPointerLeave={() => setHot(null)}>
+        <ul className="mt-3 border-t border-white/15">
           {destinations.map((d, i) => (
             <li key={d.name} className="border-b border-white/15">
               <button
@@ -169,7 +169,6 @@ export function CorridorMap() {
                 aria-pressed={hot === i}
                 onPointerEnter={(e) => e.pointerType === "mouse" && setHot(i)}
                 onFocus={() => setHot(i)}
-                onBlur={() => setHot(null)}
                 onClick={() => setHot(hot === i ? null : i)}
                 className="group flex w-full items-baseline justify-between gap-4 py-3 text-left"
               >
@@ -177,11 +176,20 @@ export function CorridorMap() {
                   <span className={`display text-2xl transition-colors duration-150 ${hot === i ? "text-amber" : "text-white"}`}>{d.name}</span>
                   <span className="ml-3 text-sm text-mist">{d.via}</span>
                 </span>
-                <span className="shrink-0 text-mist tabular-nums">about {d.km} km</span>
+                <span className="shrink-0 text-right text-mist tabular-nums">
+                  about {d.km} km <span className="max-sm:block">({d.mi} mi)</span>
+                </span>
               </button>
             </li>
           ))}
         </ul>
+        <a
+          href="#quote"
+          onClick={() => hot !== null && window.dispatchEvent(new CustomEvent("quote-lane", { detail: destinations[hot].name }))}
+          className="btn btn-light mt-6 w-full sm:w-auto"
+        >
+          {hot === null ? "Get a quote for your lane" : `Get a quote to ${destinations[hot].name}`}
+        </a>
       </div>
     </div>
   );

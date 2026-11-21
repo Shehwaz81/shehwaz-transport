@@ -24,7 +24,7 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className="on-navy fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-navy-deep/90 text-white backdrop-blur-md">
+    <header className="on-navy fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-navy-deep text-white">
       <div className="shell flex h-16 items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
           <Image
@@ -56,7 +56,7 @@ export function Header() {
             className="link-draw hidden items-center gap-2 font-semibold tabular-nums md:flex"
           >
             <span aria-hidden className="size-2 rounded-full bg-amber" />
-            <span className="sr-only">Call dispatch, open 24/7:</span>
+            <span className="font-medium text-mist max-xl:sr-only">Dispatch 24/7</span>
             {company.phone}
           </a>
           <Link href="/#quote" className="btn btn-light hidden min-h-10! px-4! md:inline-flex">

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Phone } from "lucide-react";
 import { company, services } from "@/lib/data";
 
 export function Footer() {
@@ -64,20 +63,5 @@ export function Footer() {
         </p>
       </div>
     </footer>
-  );
-}
-
-/* Dispatchers and drivers are on phones; the call button stays under the thumb. */
-export function MobileBar() {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-3 on-navy border-t border-white/10 bg-navy-deep/90 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
-      <a href={company.phoneHref} className="btn btn-ghost-light">
-        <Phone aria-hidden className="size-4" />
-        Call dispatch
-      </a>
-      <Link href="/#quote" className="btn btn-light">
-        Get a quote
-      </Link>
-    </div>
   );
 }

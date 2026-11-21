@@ -9,7 +9,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
  * World units are metres. +x is forward, +y is up.
  *
  * The scene is driven by one number, the chapter position `c`:
- *   0 hero · 1 full truckload · 2 less than truckload · 3 expedited · 4 emergency
+ *   0 hero · 1 full truckload · 2 less than truckload · 3 expedited and emergency · 4 the border
  */
 
 const NAVY = 0x071738;
@@ -30,7 +30,7 @@ const WIDE: Pose[] = [
   { yaw: 78, pitch: 11, fit: 26, t: [-7.3, 2.0, 0], ox: 0.01, oy: -0.24 },
   { yaw: 146, pitch: 20, fit: 16, t: [-14.8, 2.4, 0], ox: 0.2, oy: -0.08 },
   { yaw: 250, pitch: 4, fit: 15, t: [0.2, 1.7, 0], ox: 0.18, oy: -0.14 },
-  { yaw: 328, pitch: 5, fit: 15, t: [1.0, 1.9, 0], ox: 0.18, oy: -0.14 },
+  { yaw: 286, pitch: 3, fit: 100, t: [-11, 14, 0], ox: 0.02, oy: -0.04 },
 ];
 
 const TALL: Pose[] = [
@@ -38,7 +38,7 @@ const TALL: Pose[] = [
   { yaw: 132, pitch: 15, fit: 10.5, t: [-12.5, 2.2, 0], ox: 0, oy: -0.2 },
   { yaw: 152, pitch: 21, fit: 8, t: [-15.8, 2.1, 0], ox: 0, oy: -0.2 },
   { yaw: 250, pitch: 4, fit: 9.5, t: [1.2, 1.7, 0], ox: 0, oy: -0.2 },
-  { yaw: 326, pitch: 5, fit: 8.5, t: [1.8, 1.9, 0], ox: 0, oy: -0.2 },
+  { yaw: 300, pitch: 5, fit: 42, t: [-6, 10, 0], ox: 0, oy: -0.1 },
 ];
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -532,6 +532,60 @@ export function createTruckScene(
   const edgeGeos = [5.7, -5.7].map((z) => box(-120, 120, 0.004, 0.012, 0.13, z, 0.001));
   scene.add(new THREE.Mesh(track(merged(edgeGeos)), lineMat));
 
+  // ---- the crossing ------------------------------------------------------
+  // A suspension bridge that takes over from the open road in the last chapter.
+  // The deck sits a hair under the road, so it only shows once the ground fades.
+  const groundMat = ground.material as THREE.MeshStandardMaterial;
+  const steel = track(new THREE.MeshStandardMaterial({ color: 0xb4bccb, roughness: 0.55, metalness: 0.35, transparent: true }));
+  const deckMat = track(new THREE.MeshStandardMaterial({ color: 0x060c1e, roughness: 0.9, transparent: true }));
+  const bridge = new THREE.Group();
+  bridge.visible = false;
+  scene.add(bridge);
+  const TOWERS = [36, -64];
+  const MID = (TOWERS[0] + TOWERS[1]) / 2;
+  const TOP = 50;
+  const WATER = -40;
+  const CZ = 8.3;
+  const cableY = (x: number) => {
+    const half = (TOWERS[0] - TOWERS[1]) / 2;
+    const d = x - MID;
+    if (Math.abs(d) <= half) return 7 + (TOP - 7) * (d / half) ** 2;
+    return Math.max(1, TOP - (TOP - 1) * ((Math.abs(d) - half) / 70));
+  };
+  {
+    const deck = new THREE.Mesh(track(box(-320, 320, -1.4, -0.015, 14.6, 0, 0.01)), deckMat);
+    deck.receiveShadow = true;
+    bridge.add(deck);
+    const steelG: THREE.BufferGeometry[] = [];
+    for (const z of [7.2, -7.2]) steelG.push(box(-320, 320, -1.6, 1.15, 0.3, z, 0.01), box(-320, 320, 1.05, 1.2, 0.5, z, 0.01));
+    for (const tx of TOWERS) {
+      for (const z of [CZ, -CZ]) steelG.push(box(tx - 1.3, tx + 1.3, WATER, TOP + 1.5, 2.4, z, 0.05));
+      for (const y of [-6, 9, 30, TOP - 1]) steelG.push(box(tx - 0.9, tx + 0.9, y - 1.1, y + 1.1, CZ * 2, 0, 0.05));
+    }
+    for (let x = TOWERS[1] + 4; x < TOWERS[0]; x += 4) for (const z of [CZ, -CZ]) steelG.push(cyl(0.06, cableY(x) - 1, "y", x, (cableY(x) + 1) / 2, z, 5));
+    for (const z of [CZ, -CZ]) {
+      const pts: THREE.Vector3[] = [];
+      for (let x = TOWERS[1] - 70; x <= TOWERS[0] + 70; x += 3.5) pts.push(new THREE.Vector3(x, cableY(x), z));
+      steelG.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 160, 0.24, 6));
+    }
+    const frame = new THREE.Mesh(track(merged(steelG)), steel);
+    bridge.add(frame);
+  }
+  // the string of lights along the main cables
+  const necklace = track(new THREE.PointsMaterial({ map: glowTex, color: 0xffd9a0, size: 2.2, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  {
+    const pos: number[] = [];
+    for (let x = TOWERS[1] - 68; x <= TOWERS[0] + 68; x += 4) for (const z of [CZ, -CZ]) pos.push(x, cableY(x) + 0.3, z);
+    const g = track(new THREE.BufferGeometry());
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    bridge.add(new THREE.Points(g, necklace));
+  }
+  const water = new THREE.Mesh(track(new THREE.PlaneGeometry(900, 900)), track(new THREE.MeshStandardMaterial({ color: 0x030818, roughness: 0.25, metalness: 0.6, envMapIntensity: 0.5 })));
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = WATER;
+  water.visible = false;
+  scene.add(water);
+
   // ---- state --------------------------------------------------------------
   let target = 0; // chapter position requested by scroll
   let cur = 0; // smoothed chapter position
@@ -597,7 +651,8 @@ export function createTruckScene(
     const introE = 1 - Math.pow(1 - intro, 4);
     const introX = -(1 - introE) * 15;
 
-    const wantSpeed = opts.reducedMotion ? 0 : 26 * smooth(2.45, 3, cur) + 8 * smooth(3.3, 4, cur);
+    // Up to speed for the rush chapter, then easing to a stand on the bridge.
+    const wantSpeed = opts.reducedMotion ? 0 : 28 * smooth(2.45, 3, cur) * (1 - smooth(3.5, 3.95, cur));
     speed += (wantSpeed - speed) * (1 - Math.exp(-dt * 3));
     if (speed < 0.02 && wantSpeed === 0) speed = 0;
     if (speed > 0) dirty = true;
@@ -620,6 +675,18 @@ export function createTruckScene(
     cartonGhost.opacity = woodGhost.opacity = 1 - 0.87 * ghost;
     cartonGhost.depthWrite = woodGhost.depthWrite = ghost < 0.05;
 
+    // the road gives way to the bridge
+    const span = smooth(3.12, 3.65, cur);
+    bridge.visible = water.visible = span > 0.001;
+    ground.visible = span < 0.999;
+    groundMat.transparent = span > 0.001;
+    groundMat.opacity = 1 - span;
+    steel.opacity = deckMat.opacity = span;
+    steel.transparent = deckMat.transparent = span < 0.999;
+    necklace.opacity = span;
+    pool.intensity = 1200 * (1 - 0.55 * span);
+    bridge.position.x = (4 - Math.min(4, cur)) * 60;
+
     // motion
     const travel = speed * dt;
     roadOffset = (roadOffset + travel) % DASH;
@@ -631,7 +698,7 @@ export function createTruckScene(
     body.position.y = speed > 0 ? Math.sin(now / 90) * 0.006 * Math.min(1, speed / 20) : 0;
 
     // lamps
-    const night = 0.55 + 0.45 * smooth(2.5, 3, cur) + 0.5 * smooth(3.4, 4, cur);
+    const night = 0.55 + 0.6 * smooth(2.5, 3, cur);
     lamp.emissiveIntensity = 1.2 + 2.2 * night;
     for (const g of headGlows) g.opacity = 0.5 * night;
     for (const g of tailGlows) g.opacity = 0.75;

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import { Header } from "@/components/Header";
-import { Footer, MobileBar } from "@/components/Footer";
+import { Footer } from "@/components/Footer";
+import { MobileBar } from "@/components/MobileBar";
 import "./globals.css";
 
 // One family; the width axis gives the condensed display cut.
@@ -14,7 +15,7 @@ const archivo = Archivo({
 export const metadata: Metadata = {
   title: "Shehwaz Transport Inc. | Windsor Trucking & Cross-Border Logistics",
   description:
-    "Premier trucking company in Windsor, Ontario. Shehwaz Transport Inc. provides reliable FTL, LTL, and expedited freight services to Detroit, Michigan, Toronto, and across North America.",
+    "Family-owned trucking company in Windsor, Ontario. Shehwaz Transport Inc. provides reliable FTL, LTL, and expedited freight services to Detroit, Michigan, Toronto, and across North America.",
   keywords: [
     "Shehwaz Transport",
     "Trucking Company Windsor",
@@ -31,8 +32,6 @@ export const metadata: Metadata = {
     "Local Trucking Windsor",
     "Transport Windsor",
     "Supply Chain Solutions",
-    "Freight Brokerage",
-    "3PL Services",
   ],
   authors: [{ name: "Shehwaz Transport Inc." }],
   creator: "Shehwaz Transport Inc.",
@@ -184,7 +183,7 @@ export default function RootLayout({
       "opens": "00:00",
       "closes": "23:59"
     },
-    "description": "Shehwaz Transport Inc. is a premier trucking and logistics company based in Windsor, Ontario, specializing in cross-border freight, FTL, LTL, and expedited shipping."
+    "description": "Shehwaz Transport Inc. is a family-owned trucking company based in Windsor, Ontario, specializing in cross-border freight, FTL, LTL, and expedited shipping."
   };
 
   return (
@@ -196,7 +195,7 @@ export default function RootLayout({
         />
         <a
           href="#main"
-          className="btn btn-primary sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-3 focus-visible:left-3 focus-visible:z-[60]"
+          className="btn btn-primary sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:outline-amber focus-visible:top-3 focus-visible:left-3 focus-visible:z-[60]"
         >
           Skip to content
         </a>

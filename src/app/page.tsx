@@ -7,10 +7,48 @@ import { QuoteForm } from "@/components/QuoteForm";
 import { TruckStage } from "@/components/TruckStage";
 import { company, facts, services } from "@/lib/data";
 
+const [ftl, ltl, expedited, emergency] = services;
+const bestFor = (text: string) => `Best for: ${text.replace(/\.$/, "").toLowerCase()}.`;
+
+// One screen of the pinned truck scene each; the scene's own chapters are in truck/scene.ts.
+const chapters = [
+  {
+    rail: "Full truckload",
+    title: ftl.title,
+    summary: ftl.summary,
+    note: bestFor(ftl.bestFor),
+    links: [{ href: `/services/${ftl.id}`, label: "See full truckload" }],
+  },
+  {
+    rail: "Less than truckload",
+    title: ltl.title,
+    summary: ltl.summary,
+    note: bestFor(ltl.bestFor),
+    links: [{ href: `/services/${ltl.id}`, label: "See less than truckload" }],
+  },
+  {
+    rail: "Expedited",
+    title: "Expedited and emergency",
+    summary: "Time-critical loads and same-day runs, with an update at every step.",
+    note: "Best for: production parts, line-down situations and hard deadlines.",
+    links: [
+      { href: `/services/${expedited.id}`, label: "See expedited freight" },
+      { href: `/services/${emergency.id}`, label: "See emergency shipping" },
+    ],
+  },
+  {
+    rail: "Cross-border",
+    title: "Across the border",
+    summary: "Windsor to Detroit is the lane we know best, in both directions.",
+    note: "From there, on to Ontario, Michigan and the rest of Canada and the US.",
+    links: [{ href: "/#border", label: "See where the crossing leads" }],
+  },
+];
+
 export default function Home() {
   return (
     <>
-      <TruckStage chapters={services.map((s) => s.title)}>
+      <TruckStage chapters={chapters.map((c) => c.rail)}>
         <div className="shell flex h-svh flex-col pt-24 sm:pt-32">
           <h1 className="display text-[clamp(2.9rem,7.4vw,6.5rem)]">
             {["Cross-border freight,", "Windsor to Detroit", "and back."].map((line, i) => (
@@ -34,19 +72,25 @@ export default function Home() {
           </div>
         </div>
 
-        <h2 id="services" className="sr-only">
-          What we haul
-        </h2>
-        {services.map((service) => (
-          <article key={service.id} className="shell flex h-svh flex-col pt-24 md:justify-center md:pt-0 md:pb-[18svh]">
+        <h2 className="sr-only">What we haul</h2>
+        {chapters.map((chapter, i) => (
+          <article
+            key={chapter.title}
+            id={i === 0 ? "services" : undefined}
+            className="shell flex h-svh scroll-mt-0 flex-col pt-24 md:justify-center md:pt-0 md:pb-[18svh]"
+          >
             <div className="max-w-md">
-              <h3 className="display text-5xl sm:text-7xl">{service.title}</h3>
-              <p className="mt-4 text-lg leading-relaxed text-white sm:mt-5 sm:text-xl">{service.summary}</p>
-              <p className="mt-3 text-mist max-sm:hidden">Best for: {service.bestFor.replace(/\.$/, "").toLowerCase()}.</p>
-              <Link href={`/services/${service.id}`} className="btn btn-ghost-light group mt-6">
-                See {service.title.toLowerCase()}
-                <ArrowRight aria-hidden className="arrow size-4" />
-              </Link>
+              <h3 className="display text-5xl sm:text-7xl">{chapter.title}</h3>
+              <p className="mt-4 text-lg leading-relaxed text-white sm:mt-5 sm:text-xl">{chapter.summary}</p>
+              <p className="mt-3 text-mist max-sm:hidden">{chapter.note}</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {chapter.links.map((link) => (
+                  <Link key={link.href} href={link.href} className="btn btn-ghost-light group">
+                    {link.label}
+                    <ArrowRight aria-hidden className="arrow size-4" />
+                  </Link>
+                ))}
+              </div>
             </div>
           </article>
         ))}
@@ -56,12 +100,11 @@ export default function Home() {
         <div className="shell py-20 sm:py-28">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <h2 className="display max-w-[12em] text-5xl sm:text-7xl">
-              Based at the busiest border crossing in North America.
+              Based at the busiest crossing on the Canada&ndash;US border.
             </h2>
             <p className="max-w-[42ch] text-lg leading-relaxed text-mist">
-              More trade crosses between Windsor and Detroit than anywhere else on the Canada&ndash;US
-              border. Our trucks are parked beside it, where Highway 401 ends and I-75, I-94 and
-              I-96 begin.
+              More trade crosses between Windsor and Detroit than anywhere else on the border. Our
+              trucks are parked beside it, where Highway 401 meets I-75, I-94 and I-96.
             </p>
           </div>
           <div className="mt-12">
@@ -120,12 +163,9 @@ export default function Home() {
             </p>
             <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-8 border-t-2 border-navy pt-8">
               {facts.map((fact) => (
-                <div key={fact.label}>
-                  <dt className="sr-only">{fact.label}</dt>
-                  <dd>
-                    <span className="display block text-5xl tabular-nums sm:text-6xl">{fact.value}</span>
-                    <span className="mt-2 block text-steel">{fact.label}</span>
-                  </dd>
+                <div key={fact.label} className="flex flex-col-reverse">
+                  <dt className="mt-2 text-steel">{fact.label}</dt>
+                  <dd className="display text-5xl tabular-nums sm:text-6xl">{fact.value}</dd>
                 </div>
               ))}
             </dl>

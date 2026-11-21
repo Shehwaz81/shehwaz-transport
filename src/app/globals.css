@@ -10,6 +10,8 @@
   --color-fender: #2439b0;
   --color-fender-dark: #1b2c8f;
   --color-chrome: #d5d9e0;
+  --color-rule: #838da1;
+  --color-danger: #b42318;
   --color-steel: #566176;
   --color-mist: #b9c4dc;
   --color-amber: #ffb01f;
@@ -51,6 +53,20 @@
   a,
   button {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-fender);
+    color: #fff;
+  }
+
+  .on-navy ::selection {
+    background-color: var(--color-amber);
+    color: var(--color-navy-deep);
   }
 }
 
@@ -181,9 +197,10 @@
   .field {
     width: 100%;
     min-height: 3rem;
-    border: 1.5px solid var(--color-chrome);
+    border: 1.5px solid var(--color-rule);
     border-radius: var(--radius-plate);
     background-color: #fff;
+    caret-color: var(--color-fender);
     padding: 0.65rem 0.85rem;
     /* 16px keeps iOS from zooming the page on focus */
     font-size: 1rem;
@@ -192,7 +209,7 @@
   }
 
   .field::placeholder {
-    color: #8b93a3;
+    color: #667085;
   }
 
   .field:focus-visible {
@@ -202,7 +219,7 @@
   }
 
   .field[aria-invalid="true"] {
-    border-color: #b42318;
+    border-color: var(--color-danger);
   }
 }
 
