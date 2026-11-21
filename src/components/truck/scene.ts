@@ -166,18 +166,34 @@ export function createTruckScene(
     deck.receiveShadow = true;
     bridge.add(deck);
     const steelG: THREE.BufferGeometry[] = [];
-    for (const z of [7.2, -7.2]) steelG.push(box(-320, 320, -1.6, 1.15, 0.3, z, 0.01), box(-320, 320, 1.05, 1.2, 0.5, z, 0.01));
+    // each side: the girder, a low parapet, and an open railing on posts. Every member is kept
+    // chunky, so none of them thins to under a pixel and shimmers from across the river.
+    for (const z of [7.2, -7.2]) {
+      steelG.push(box(-320, 320, -1.6, 0.4, 0.3, z, 0.01), box(-320, 320, 1.0, 1.2, 0.24, z, 0.01));
+      for (let x = -320; x <= 320; x += 8) steelG.push(box(x - 0.1, x + 0.1, 0.4, 1.0, 0.2, z, 0.01));
+    }
     for (const tx of TOWERS) {
       for (const z of [CZ, -CZ]) steelG.push(box(tx - 1.3, tx + 1.3, WATER, TOP + 1.5, 2.4, z, 0.05));
       for (const y of [-6, 9, 30, TOP - 1]) steelG.push(box(tx - 0.9, tx + 0.9, y - 1.1, y + 1.1, CZ * 2, 0, 0.05));
     }
-    for (let x = TOWERS[1] + 4; x < TOWERS[0]; x += 4) for (const z of [CZ, -CZ]) steelG.push(cyl(0.06, cableY(x) - 1, "y", x, (cableY(x) + 1) / 2, z, 5));
+    for (let x = TOWERS[1] + 4; x < TOWERS[0]; x += 4) for (const z of [CZ, -CZ]) // thick enough to stay more than a pixel wide from across the river: thinner hangers flicker as they move
+    steelG.push(cyl(0.11, cableY(x) - 1, "y", x, (cableY(x) + 1) / 2, z, 6));
     for (const z of [CZ, -CZ]) {
       const pts: THREE.Vector3[] = [];
       for (let x = TOWERS[1] - 70; x <= TOWERS[0] + 70; x += 3.5) pts.push(new THREE.Vector3(x, cableY(x), z));
       steelG.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 160, 0.24, 6));
     }
-    bridge.add(new THREE.Mesh(track(merged(steelG)), steel));
+    const frame = new THREE.Mesh(track(merged(steelG)), steel);
+    bridge.add(frame);
+    // While the bridge is fading in it is see-through, and a see-through shape shows its own far
+    // sides and insides through its near ones. These copies draw nothing but depth, first, so only
+    // the nearest surface of the steel and the deck is ever blended in.
+    const depthOnly = track(new THREE.MeshBasicMaterial({ colorWrite: false }));
+    for (const m of [deck, frame]) {
+      const mask = new THREE.Mesh(m.geometry, depthOnly);
+      mask.renderOrder = -5;
+      bridge.add(mask);
+    }
   }
   // the string of lights along the main cables
   const necklace = track(new THREE.PointsMaterial({ map: glowTex, color: 0xffd9a0, size: 2.2, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -304,7 +320,7 @@ export function createTruckScene(
     town.near.points.visible = span < 0.999;
     town.far.points.position.y = (WATER + 2) * span;
     pool.intensity = 260 * (1 - 0.55 * span);
-    bridge.position.x = (4 - Math.min(4, cur)) * 60;
+    bridge.position.x = (4 - Math.min(4, cur)) * 24;
 
     // motion
     const travel = speed * dt;

@@ -274,6 +274,8 @@ export function makeRoad(truck: THREE.Object3D, tier: Tier): Road {
       ground.visible = dashes.visible = edges.visible = on;
       const gone = smooth(0.55, 1, span);
       mat.transparent = paint.transparent = span > 0.001;
+      // a fading road must not hide what is under it: even its invisible parts would write depth
+      mat.depthWrite = paint.depthWrite = span <= 0.001;
       mat.opacity = paint.opacity = 1 - gone;
       uniforms.uEdge.value = span > 0.001 ? lerp(420, 7.3, Math.pow(smooth(0, 0.6, span), 0.4)) : 1e6;
       if (mirror) {
