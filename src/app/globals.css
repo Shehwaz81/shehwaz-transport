@@ -1,39 +1,365 @@
 @import "tailwindcss";
 
+/* Palette comes off the trucks: white cab, royal-blue fenders, the navy of
+   the logo, chrome, and the amber of the marker lights. */
 @theme {
-  --color-navy-900: #051024;
-  --color-navy-800: #0a192f;
-  --color-charcoal-900: #111827;
-  --color-charcoal-800: #1f2937;
-  --color-orange-500: #ff4d00;
-  --color-orange-600: #cc3d00;
-  --color-gold-500: #d4af37;
-  --color-gold-400: #eac159;
-  
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paint: #f5f6f8;
+  --color-navy: #0b2150;
+  --color-navy-deep: #071738;
+  --color-navy-raised: #12306b;
+  --color-fender: #2439b0;
+  --color-fender-dark: #1b2c8f;
+  --color-chrome: #d5d9e0;
+  --color-steel: #566176;
+  --color-mist: #b9c4dc;
+  --color-amber: #ffb01f;
+
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --radius-plate: 6px;
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
-:root {
-  --background: #051024;
-  --foreground: #f8fafc;
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  /* Smooth scrolling for the whole document */
+@layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paint);
+    color: var(--color-navy);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  [id] {
+    scroll-margin-top: 5.5rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-fender);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .on-navy :focus-visible {
+    outline-color: var(--color-amber);
+  }
+
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Condensed heavy cut of Archivo, the same proportions as the logo lettering. */
+@utility display {
+  font-stretch: 66%;
+  font-weight: 800;
+  line-height: 0.94;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+  padding-inline: 1.25rem;
+
+  @media (min-width: 40rem) {
+    padding-inline: 2rem;
+  }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.25rem;
+    border-radius: var(--radius-plate);
+    font-weight: 650;
+    white-space: nowrap;
+    transition:
+      transform 150ms var(--ease-out-strong),
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .btn-primary {
+    background-color: var(--color-fender);
+    color: #fff;
+  }
+
+  .btn-outline {
+    border: 1.5px solid var(--color-navy);
+    color: var(--color-navy);
+  }
+
+  .btn-light {
+    background-color: #fff;
+    color: var(--color-navy);
+  }
+
+  .btn-ghost-light {
+    border: 1.5px solid rgb(255 255 255 / 0.4);
+    color: #fff;
+  }
+
+  /* Hover steps the button up a pixel; press sinks it. Fine pointers only. */
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .btn-primary:hover {
+      background-color: var(--color-fender-dark);
+    }
+    .btn-outline:hover {
+      background-color: #fff;
+    }
+    .btn-light:hover {
+      background-color: #e6eaf3;
+    }
+    .btn-ghost-light:hover {
+      border-color: #fff;
+      background-color: rgb(255 255 255 / 0.08);
+    }
+    .group:hover .arrow {
+      transform: translateX(3px);
+    }
+    .link-draw:hover {
+      background-size: 100% 1.5px;
+    }
+  }
+
+  .btn:active {
+    transform: translateY(1px) scale(0.98);
+    transition-duration: 90ms;
+  }
+
+  .arrow {
+    transition:
+      transform 150ms var(--ease-out-strong),
+      color 150ms ease;
+  }
+
+  /* An underline that draws in from the left and leaves to the right. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1.5px;
+    padding-bottom: 3px;
+    transition: background-size 180ms var(--ease-out-strong);
+  }
+
+  .link-draw:focus-visible {
+    background-size: 100% 1.5px;
+  }
+
+  /* The outlined box of regulatory lettering every truck carries on its door. */
+  .decal {
+    display: inline-block;
+    background-color: #fff;
+    border: 3px solid var(--color-navy);
+    border-radius: 14px;
+    padding: 0.9rem 1.15rem 0.8rem;
+    color: var(--color-fender);
+    font-stretch: 70%;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.12;
+  }
+
+  .field {
+    width: 100%;
+    min-height: 3rem;
+    border: 1.5px solid var(--color-chrome);
+    border-radius: var(--radius-plate);
+    background-color: #fff;
+    padding: 0.65rem 0.85rem;
+    /* 16px keeps iOS from zooming the page on focus */
+    font-size: 1rem;
+    color: var(--color-navy);
+    transition: border-color 160ms ease;
+  }
+
+  .field::placeholder {
+    color: #8b93a3;
+  }
+
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--color-fender);
+    box-shadow: 0 0 0 3px rgb(36 57 176 / 0.18);
+  }
+
+  .field[aria-invalid="true"] {
+    border-color: #b42318;
+  }
+}
+
+/* The hero arrives once: headline lines rise out of their masks, then the
+   lead and buttons follow. Nothing else on the page animates in on its own. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes line-rise {
+  from {
+    transform: translateY(108%);
+  }
+}
+
+@keyframes unveil {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ping {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+.rise {
+  animation: rise 520ms var(--ease-out-strong) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.line-mask {
+  display: block;
+  overflow: hidden;
+  /* room for descenders inside the mask */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.line-mask > span {
+  display: block;
+  animation: line-rise 700ms var(--ease-out-strong) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+.unveil {
+  animation: unveil 900ms var(--ease-in-out-strong) 120ms both;
+}
+
+/* ---- map ---- */
+.map-city {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.map-inset {
+  font-size: 19px;
+  font-weight: 800;
+  font-stretch: 70%;
+}
+
+.map-home {
+  font-size: 26px;
+  font-weight: 800;
+  font-stretch: 70%;
+}
+
+@media (max-width: 40rem) {
+  .map-city {
+    font-size: 36px;
+  }
+  .map-home {
+    font-size: 44px;
+  }
+}
+
+/* Highways draw outward from the crossing the first time the map is seen. */
+.map-route {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition:
+    stroke-dashoffset 1400ms var(--ease-in-out-strong) calc(var(--i, 0) * 110ms),
+    opacity 180ms ease,
+    stroke 180ms ease,
+    stroke-width 180ms ease;
+}
+
+.map-fade {
+  opacity: 0;
+  transition: opacity 500ms ease 1100ms;
+}
+
+.map[data-drawn="true"] .map-route {
+  stroke-dashoffset: 0;
+}
+
+.map[data-drawn="true"] .map-fade {
+  opacity: 1;
+}
+
+.map-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ping 2.4s var(--ease-out-strong) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .rise,
+  .unveil,
+  .line-mask > span {
+    animation: fade 300ms ease both;
+  }
+
+  .btn:hover,
+  .btn:active,
+  .group:hover .arrow {
+    transform: none;
+  }
+
+  .map-route {
+    stroke-dashoffset: 0;
+    transition:
+      opacity 180ms ease,
+      stroke 180ms ease;
+  }
+
+  .map-fade {
+    transition-delay: 0ms;
+  }
+
+  .map-ping {
+    animation: none;
+  }
+
+  .map-runner {
+    display: none;
   }
 }

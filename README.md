@@ -1,3 +1,33 @@
+# Shehwaz Transport website
+
+Marketing site for Shehwaz Transport Inc. (Next.js, Tailwind). Company facts, service copy and
+the numbers shown on the door decal all live in `src/lib/data.ts`.
+
+## The 3D truck and the map
+
+The home page opens on a scroll-driven 3D scene built with three.js. The model, lighting, camera
+positions and what each scroll chapter shows are all in `src/components/truck/scene.ts`;
+`src/components/TruckStage.tsx` ties it to the scroll position. It loads after the page's text, holds
+still for visitors who ask for reduced motion, and falls back to a photograph where WebGL is missing.
+
+The map's coastlines come from Natural Earth (public domain) and are stored as SVG paths in
+`src/lib/mapData.ts`. Cities, distances and labels are in `src/components/CorridorMap.tsx`.
+
+## Quote form email
+
+The quote form sends email through [Resend](https://resend.com). Set two environment variables
+where the site is hosted:
+
+- `RESEND_API_KEY`: an API key from your Resend account.
+- `QUOTE_FROM_EMAIL`: the sender, on a domain verified in Resend, e.g.
+  `Shehwaz Transport website <quotes@shehwaztransport.ca>`.
+
+Requests go to the dispatch address in `src/lib/data.ts`, with the customer as reply-to. Until
+both variables are set, or if sending fails, the form shows the customer a button that opens the
+same request in their own email app, plus the dispatch phone number.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

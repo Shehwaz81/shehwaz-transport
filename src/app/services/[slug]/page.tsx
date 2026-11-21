@@ -1,135 +1,117 @@
-import { services } from "@/lib/data";
-import { Navbar } from "@/components/layout/Navbar";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ArrowUpRight } from "lucide-react";
 import { notFound } from "next/navigation";
+import { ArrowRight, Phone } from "lucide-react";
+import { company, services } from "@/lib/data";
 
-// Generate static params for all services
+type Props = { params: Promise<{ slug: string }> };
+
 export function generateStaticParams() {
-  return services.map((service) => ({
-    slug: service.id,
-  }));
+  return services.map((service) => ({ slug: service.id }));
 }
 
-export default async function ServicePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const slug = (await params).slug;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
   const service = services.find((s) => s.id === slug);
+  if (!service) return {};
+  const name = service.abbr ? `${service.title} (${service.abbr})` : service.title;
+  return {
+    title: `${name} | ${company.legalName}`,
+    description: `${service.summary} Cross-border trucking from Windsor, Ontario with 24/7 dispatch.`,
+    alternates: { canonical: `/services/${service.id}` },
+  };
+}
 
-  if (!service) {
-    notFound();
-  }
+export default async function ServicePage({ params }: Props) {
+  const { slug } = await params;
+  const service = services.find((s) => s.id === slug);
+  if (!service) notFound();
 
   return (
-    <main className="min-h-screen bg-navy-900">
-      <Navbar />
-      
-      {/* Hero Section */}
-      <section className="relative h-[60vh] w-full overflow-hidden flex items-center">
-        <div className="absolute inset-0 z-0">
+    <>
+      <section className="shell pt-28 sm:pt-32">
+        <nav aria-label="Breadcrumb" className="rise text-steel">
+          <Link href="/#services" className="underline underline-offset-4 hover:text-navy">
+            Services
+          </Link>
+          <span aria-hidden className="mx-2">
+            /
+          </span>
+          <span>{service.title}</span>
+        </nav>
+        <h1 className="display rise mt-5 text-[clamp(3.1rem,10.5vw,7.75rem)] [--i:1]">
+          {service.title}
+        </h1>
+        <p className="rise mt-6 max-w-[46ch] text-xl leading-relaxed text-steel [--i:2] sm:text-2xl">
+          {service.summary}
+        </p>
+        <div className="unveil relative mt-10 aspect-[4/3] overflow-hidden rounded-plate sm:aspect-[5/2]">
           <Image
             src={service.image}
-            alt={service.title}
+            alt="A Shehwaz Transport truck: white Freightliner cab with royal-blue fenders and a dry van trailer."
             fill
-            className="object-cover"
             priority
+            sizes="(min-width: 76rem) 72rem, 100vw"
+            className="object-cover object-[50%_58%]"
           />
-          <div className="absolute inset-0 bg-navy-900/80 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-900 via-transparent to-transparent" />
-        </div>
-
-        <div className="container relative z-10 px-4 md:px-6">
-          <Link 
-            href="/" 
-            className="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 mb-6 transition-colors font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            {service.title}
-          </h1>
-          <p className="text-xl text-gray-300 max-w-2xl">
-            {service.shortDescription}
-          </p>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              <div 
-                className="prose prose-lg prose-invert max-w-none text-gray-300"
-                dangerouslySetInnerHTML={{ __html: service.fullDescription }}
-              />
-              
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mt-12">
-                <h3 className="text-2xl font-bold text-white mb-6">Why Choose Shehwaz for {service.title}?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    "Real-time Tracking",
-                    "Dedicated Support Team",
-                    "Cost-Effective Solutions",
-                    "Safety First Approach",
-                    "On-Time Performance",
-                    "Customized Logistics"
-                  ].map((item) => (
-                    <div key={item} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                      <span className="text-gray-300">{item}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-orange-500 rounded-2xl p-8 text-white">
-                <h3 className="text-2xl font-bold mb-4">Ready to Ship?</h3>
-                <p className="mb-6 text-orange-100">
-                  Get a competitive quote for your {service.title.toLowerCase()} needs today.
-                </p>
-                <Link
-                  href="/#contact"
-                  className="block w-full bg-white text-orange-600 text-center py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
-                >
-                  Request a Quote
-                </Link>
-              </div>
-
-              <div className="bg-navy-800 border border-white/10 rounded-2xl p-8">
-                <h3 className="text-xl font-bold text-white mb-4">Other Services</h3>
-                <div className="space-y-4">
-                  {services
-                    .filter((s) => s.id !== service.id)
-                    .map((s) => (
-                      <Link
-                        key={s.id}
-                        href={`/services/${s.id}`}
-                        className="block p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-gray-300 group-hover:text-white transition-colors">
-                            {s.title}
-                          </span>
-                          <ArrowUpRight className="w-4 h-4 text-gray-500 group-hover:text-orange-500 transition-colors" />
-                        </div>
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            </div>
+      <section className="shell grid gap-14 py-16 sm:py-24 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-20">
+        <div>
+          <div className="max-w-[62ch] space-y-6 text-lg leading-relaxed">
+            {service.body.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
           </div>
+          <dl className="mt-10 max-w-[62ch] border-t-2 border-navy pt-6">
+            <dt className="font-semibold">Best for</dt>
+            <dd className="mt-1 text-lg text-steel">{service.bestFor}</dd>
+          </dl>
         </div>
+
+        <aside className="on-navy self-start rounded-plate bg-navy p-7 text-white sm:p-9">
+          <h2 className="display text-4xl">Price this load</h2>
+          <p className="mt-3 text-mist">
+            Send the pickup, the delivery and the date, or call dispatch at any hour.
+          </p>
+          <div className="mt-6 flex flex-col gap-3">
+            <Link href="/#quote" className="btn btn-light">
+              Get a quote
+            </Link>
+            <a href={company.phoneHref} className="btn btn-ghost-light tabular-nums">
+              <Phone aria-hidden className="size-4" />
+              {company.phone}
+            </a>
+          </div>
+        </aside>
       </section>
-    </main>
+
+      <section className="shell pb-20 sm:pb-28">
+        <h2 className="display text-4xl sm:text-5xl">Other services</h2>
+        <ul className="mt-6 border-t-2 border-navy">
+          {services
+            .filter((s) => s.id !== service.id)
+            .map((s) => (
+              <li key={s.id} className="border-b border-chrome">
+                <Link
+                  href={`/services/${s.id}`}
+                  className="group grid gap-x-8 gap-y-1 py-5 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto] md:items-baseline"
+                >
+                  <span className="display text-3xl transition-colors duration-150 group-hover:text-fender">
+                    {s.title}
+                  </span>
+                  <span className="text-steel">{s.summary}</span>
+                  <ArrowRight
+                    aria-hidden
+                    className="arrow hidden size-5 self-center text-steel group-hover:text-fender md:block"
+                  />
+                </Link>
+              </li>
+            ))}
+        </ul>
+      </section>
+    </>
   );
 }
