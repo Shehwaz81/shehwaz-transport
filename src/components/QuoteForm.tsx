@@ -38,7 +38,7 @@ export function QuoteForm() {
 
   if (state.status === "sent") {
     return (
-      <div role="status" className="rounded-plate border-[1.5px] border-rule bg-white p-8">
+      <div role="status" className="appear rounded-plate border-[1.5px] border-rule bg-white p-8">
         <p className="display text-4xl">Quote request sent.</p>
         <p className="mt-3 max-w-[44ch] text-steel">
           Dispatch will call or email you back. If the load is urgent, call{" "}
@@ -144,7 +144,7 @@ export function QuoteForm() {
       <div>
         {state.status === "fallback" && !stale ? (
           // No mail service behind the form: the request goes out from the shipper's own email instead.
-          <div role="status" className="rounded-plate border-[1.5px] border-navy bg-white p-5 sm:p-6">
+          <div role="status" className="appear rounded-plate border-[1.5px] border-navy bg-white p-5 sm:p-6">
             <p className="display text-3xl">One more step: send it from your email.</p>
             <p className="mt-2 max-w-[52ch] text-steel">
               Your request is written out and addressed to dispatch. Open it in your email app and press send, or

@@ -75,11 +75,17 @@ export function Header() {
         </div>
       </div>
 
+      {/* dims the page under the open menu; a tap on it closes the menu */}
+      <div
+        aria-hidden
+        onClick={() => setOpen(false)}
+        className={`fixed inset-x-0 top-16 bottom-0 bg-navy-deep/80 transition-opacity duration-200 lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      />
       <div
         id="mobile-nav"
         inert={!open}
         data-open={open}
-        className="absolute inset-x-0 top-full origin-top border-b border-white/10 bg-navy-deep opacity-0 transition-[opacity,transform] duration-150 ease-out-strong -translate-y-2 data-[open=true]:translate-y-0 data-[open=true]:opacity-100 data-[open=true]:duration-200 lg:hidden"
+        className="menu-panel absolute inset-x-0 top-full border-b border-white/10 bg-navy-deep lg:hidden"
       >
         <nav aria-label="Mobile" className="shell flex flex-col py-3">
           {links.map((link) => (

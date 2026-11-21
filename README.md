@@ -5,10 +5,18 @@ the numbers shown on the door decal all live in `src/lib/data.ts`.
 
 ## The 3D truck and the map
 
-The home page opens on a scroll-driven 3D scene built with three.js. The model, lighting, camera
-positions and what each scroll chapter shows are all in `src/components/truck/scene.ts`;
-`src/components/TruckStage.tsx` ties it to the scroll position. It loads after the page's text, holds
-still for visitors who ask for reduced motion, and falls back to a photograph where WebGL is missing.
+The home page opens on a scroll-driven 3D scene built with three.js, in `src/components/truck/`:
+
+- `model.ts` is the truck: unit 878 (a Freightliner Coronado) and trailer 8007, modelled in code
+  from the photographs in the fleet section. Colours, lettering and freight are all here.
+- `world.ts` is what surrounds it: the night lighting, the wet road and its reflections, the town
+  lights, and the lens glow. It also picks cheaper settings for phones.
+- `scene.ts` is the camera positions and what each scroll chapter shows.
+- `kit.ts` is the small set of modelling helpers the other files share.
+
+`src/components/TruckStage.tsx` ties the scene to the scroll position. It loads after the page's
+text, shows one still per chapter for visitors who ask for reduced motion, and falls back to a
+photograph where WebGL is missing.
 
 The map's coastlines come from Natural Earth (public domain) and are stored as SVG paths in
 `src/lib/mapData.ts`. Cities, distances and labels are in `src/components/CorridorMap.tsx`.

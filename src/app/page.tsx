@@ -79,7 +79,7 @@ export default function Home() {
             id={i === 0 ? "services" : undefined}
             className="shell flex h-svh scroll-mt-0 flex-col pt-24 md:justify-center md:pt-0 md:pb-[18svh]"
           >
-            <div className="max-w-md">
+            <div className="chapter-copy max-w-md">
               <h3 className="display text-5xl sm:text-7xl">{chapter.title}</h3>
               <p className="mt-4 text-lg leading-relaxed text-white sm:mt-5 sm:text-xl">{chapter.summary}</p>
               <p className="mt-3 text-mist max-sm:hidden">{chapter.note}</p>

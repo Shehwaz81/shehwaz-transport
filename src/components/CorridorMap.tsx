@@ -5,16 +5,25 @@ import { border, cities, labels, lakes, mapSize, rivers, routes } from "@/lib/ma
 
 type RouteKey = keyof typeof routes;
 
+// A trip is one line from the crossing to the city, cut from the highways it follows.
+const until = (d: string, [x, y]: number[]) => {
+  const at = d.indexOf(`${x} ${y}C`);
+  return at < 0 ? d : d.slice(0, at + `${x} ${y}`.length);
+};
+const onward = (d: string) => d.replace(/^M[^C]*/, "");
+const fork = routes.qew.d.match(/[\d.]+/g)!.slice(0, 2).map(Number); // where the 403 leaves the 401
+const { hwy401, i75s, i94, i96, qew, turnpike } = routes;
+
 // Approximate road distances from the Windsor–Detroit crossing.
-const destinations: { name: string; via: string; km: number; mi: number; routes: RouteKey[] }[] = [
-  { name: "London", via: "Hwy 401", km: 190, mi: 120, routes: ["hwy401"] },
-  { name: "Toronto", via: "Hwy 401", km: 370, mi: 230, routes: ["hwy401"] },
-  { name: "Buffalo", via: "Hwy 401, 403, QEW", km: 400, mi: 250, routes: ["hwy401", "qew"] },
-  { name: "Toledo", via: "I-75", km: 95, mi: 60, routes: ["i75s"] },
-  { name: "Cleveland", via: "I-75, I-80/90", km: 270, mi: 170, routes: ["i75s", "turnpike"] },
-  { name: "Grand Rapids", via: "I-96", km: 255, mi: 160, routes: ["i96"] },
-  { name: "Chicago", via: "I-94", km: 455, mi: 285, routes: ["i94"] },
-];
+const destinations = [
+  { name: "London", via: "Hwy 401", km: 190, mi: 120, trip: until(hwy401.d, cities.london) },
+  { name: "Toronto", via: "Hwy 401", km: 370, mi: 230, trip: hwy401.d },
+  { name: "Buffalo", via: "Hwy 401, 403, QEW", km: 400, mi: 250, trip: until(hwy401.d, fork) + onward(qew.d) },
+  { name: "Toledo", via: "I-75", km: 95, mi: 60, trip: i75s.d },
+  { name: "Cleveland", via: "I-75, I-80/90", km: 270, mi: 170, trip: i75s.d + onward(turnpike.d) },
+  { name: "Grand Rapids", via: "I-96", km: 255, mi: 160, trip: i96.d },
+  { name: "Chicago", via: "I-94", km: 455, mi: 285, trip: i94.d },
+].map((d) => ({ ...d, end: d.trip.match(/[\d.]+/g)!.slice(-2).map(Number) }));
 
 // [city, label, dx, dy, anchor, hide on small screens]
 const cityLabels: [keyof typeof cities, string, number, number, "start" | "middle" | "end", boolean][] = [
@@ -29,19 +38,37 @@ const cityLabels: [keyof typeof cities, string, number, number, "start" | "middl
   ["lansing", "Lansing", 0, 28, "middle", true],
 ];
 
-const order: RouteKey[] = ["hwy401", "i75s", "i94", "i75n", "i96", "i75ohio", "turnpike", "qew"];
+// Each highway and its place in the entrance. The roads that continue from another wait for it to arrive.
+const order: [RouteKey, number][] = [
+  ["hwy401", 0],
+  ["i75s", 1],
+  ["i94", 2],
+  ["i75n", 3],
+  ["i96", 4],
+  ["qew", 5],
+  ["i75ohio", 8],
+  ["turnpike", 8],
+];
 
 export function CorridorMap() {
   const ref = useRef<HTMLDivElement>(null);
-  const [drawn, setDrawn] = useState(false);
-  const [hot, setHot] = useState<number | null>(null);
+  const [phase, setPhase] = useState<"static" | "armed" | "drawn">("static");
+  // Pointing at or tabbing to a city previews its road; clicking keeps it.
+  const [peek, setPeek] = useState<number | null>(null);
+  const [picked, setPicked] = useState<number | null>(null);
+  const hot = peek ?? picked;
 
-  // The highways draw outward from the crossing once, the first time the map is seen.
+  // The map arrives drawn. If it has not been seen yet, hold the highways back and draw them when it is.
   useEffect(() => {
+    let armed = false;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setDrawn(true);
+        if (!armed) {
+          if (entry.boundingClientRect.top < window.innerHeight) return io.disconnect();
+          armed = true;
+          setPhase("armed");
+        } else if (entry.intersectionRatio >= 0.29) {
+          setPhase("drawn");
           io.disconnect();
         }
       },
@@ -51,11 +78,11 @@ export function CorridorMap() {
     return () => io.disconnect();
   }, []);
 
-  const hotRoutes = hot === null ? null : destinations[hot].routes;
+  const trip = hot === null ? null : destinations[hot];
   const [cx, cy] = cities.crossing;
 
   return (
-    <div ref={ref} data-drawn={drawn} className="map grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-center lg:gap-14">
+    <div ref={ref} data-phase={phase} className="map grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-center lg:gap-14">
       <svg
         viewBox={`0 0 ${mapSize.w} ${mapSize.h}`}
         role="img"
@@ -96,23 +123,25 @@ export function CorridorMap() {
         </g>
 
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {order.map((key, i) => (
+          {order.map(([key, i]) => (
             <path key={`glow-${key}`} d={routes[key].d} pathLength={1} style={{ "--i": i } as React.CSSProperties} className="map-route stroke-fender opacity-70" strokeWidth="11" />
           ))}
-          {order.map((key, i) => {
-            const on = hotRoutes?.includes(key);
-            return (
-              <path
-                key={key}
-                d={routes[key].d}
-                pathLength={1}
-                style={{ "--i": i } as React.CSSProperties}
-                className={`map-route ${on ? "stroke-amber" : "stroke-white"} ${hotRoutes && !on ? "opacity-25" : "opacity-100"}`}
-                strokeWidth={on ? 5 : 3}
-              />
-            );
-          })}
+          {order.map(([key, i]) => (
+            <path
+              key={key}
+              d={routes[key].d}
+              pathLength={1}
+              style={{ "--i": i } as React.CSSProperties}
+              className={`map-route stroke-white ${trip ? "opacity-30" : "opacity-100"}`}
+              strokeWidth="3"
+            />
+          ))}
         </g>
+
+        {/* under the city names, so the chosen road never crosses the lettering */}
+        {trip && (
+          <path key={`road-${trip.name}`} d={trip.trip} pathLength={1} fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" className="map-trip-line stroke-amber" />
+        )}
 
         <g className="map-fade">
           {cityLabels.map(([key, name, dx, dy, anchor, small]) => {
@@ -128,11 +157,7 @@ export function CorridorMap() {
           })}
         </g>
 
-        {hotRoutes?.map((key) => (
-          <circle key={key} r="6" className="map-runner fill-amber">
-            <animateMotion dur="2.6s" repeatCount="indefinite" path={routes[key].d} calcMode="spline" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
-          </circle>
-        ))}
+        {trip && <circle key={`dot-${trip.name}`} cx={trip.end[0]} cy={trip.end[1]} r="7" strokeWidth="3" className="map-trip-dot fill-amber stroke-navy-deep" />}
 
         {/* The crossing, enlarged. Detroit really is north of Windsor here. */}
         <g className="map-fade max-sm:hidden">
@@ -159,17 +184,21 @@ export function CorridorMap() {
         </text>
       </svg>
 
-      <div onPointerLeave={(e) => e.pointerType === "mouse" && setHot(null)}>
+      <div onPointerLeave={(e) => e.pointerType === "mouse" && setPeek(null)}>
         <h3 className="font-semibold text-mist">Road distance from the crossing</h3>
         <ul className="mt-3 border-t border-white/15">
           {destinations.map((d, i) => (
             <li key={d.name} className="border-b border-white/15">
               <button
                 type="button"
-                aria-pressed={hot === i}
-                onPointerEnter={(e) => e.pointerType === "mouse" && setHot(i)}
-                onFocus={() => setHot(i)}
-                onClick={() => setHot(hot === i ? null : i)}
+                aria-pressed={picked === i}
+                onPointerEnter={(e) => e.pointerType === "mouse" && setPeek(i)}
+                onFocus={() => setPeek(i)}
+                onBlur={() => setPeek((p) => (p === i ? null : p))}
+                onClick={() => {
+                  setPicked(picked === i ? null : i);
+                  if (picked === i) setPeek(null);
+                }}
                 className="group flex w-full items-baseline justify-between gap-4 py-3 text-left"
               >
                 <span>

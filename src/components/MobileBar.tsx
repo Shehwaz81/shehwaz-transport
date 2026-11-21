@@ -26,7 +26,7 @@ export function MobileBar() {
   return (
     <div
       inert={away}
-      className={`on-navy fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-3 border-t border-white/10 bg-navy-deep px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-transform duration-200 ease-out-strong md:hidden ${away ? "translate-y-full" : ""}`}
+      className={`on-navy fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-3 border-t border-white/10 bg-navy-deep px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-transform duration-200 ease-out-strong motion-reduce:transition-none md:hidden ${away ? "translate-y-full" : ""}`}
     >
       <a href={company.phoneHref} className="btn btn-ghost-light">
         <Phone aria-hidden className="size-4" />

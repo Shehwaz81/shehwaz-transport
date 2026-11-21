@@ -92,6 +92,7 @@
 
 @layer components {
   .btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -105,6 +106,15 @@
       transform 150ms var(--ease-out-strong),
       background-color 150ms ease,
       border-color 150ms ease;
+  }
+
+  /* The hover step lifts the button a pixel. This strip keeps a pointer resting
+     on the bottom edge over the button, so the lift cannot flicker. */
+  .btn::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -2px;
+    height: 2px;
   }
 
   .btn-primary {
@@ -164,7 +174,7 @@
       color 150ms ease;
   }
 
-  /* An underline that draws in from the left and leaves to the right. */
+  /* An underline that draws out from the left under the pointer and draws back the same way. */
   .link-draw {
     background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
@@ -174,8 +184,10 @@
     transition: background-size 180ms var(--ease-out-strong);
   }
 
+  /* Keyboard focus shows it at once: nothing reached by Tab waits on an animation. */
   .link-draw:focus-visible {
     background-size: 100% 1.5px;
+    transition: none;
   }
 
   /* The outlined box of regulatory lettering every truck carries on its door. */
@@ -205,7 +217,6 @@
     /* 16px keeps iOS from zooming the page on focus */
     font-size: 1rem;
     color: var(--color-navy);
-    transition: border-color 160ms ease;
   }
 
   .field::placeholder {
@@ -224,7 +235,7 @@
 }
 
 /* The hero arrives once: headline lines rise out of their masks, then the
-   lead and buttons follow. Nothing else on the page animates in on its own. */
+   lead and buttons follow. Below it, only the map and the form's replies animate in. */
 @keyframes rise {
   from {
     opacity: 0;
@@ -250,6 +261,12 @@
 @keyframes fade {
   from {
     opacity: 0;
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
   }
 }
 
@@ -283,11 +300,59 @@
   animation-delay: calc(var(--i, 0) * 80ms);
 }
 
+/* Chapter copy fades in only once it has cleared the chapter rail at the foot of
+   the scene, so a heading never scrolls through the rail's labels. Each line has
+   its own timeline. Browsers without scroll timelines simply show the copy. */
+@supports (animation-timeline: view()) {
+  .chapter-copy > * {
+    animation: fade linear both;
+    animation-timeline: view(0px 7rem);
+    animation-range: contain 0% contain 12%;
+  }
+}
+
+/* Night haze behind the border chapter's copy: over the top of the frame on a phone,
+   a pool around the copy on wider screens so the truck below it stays lit. */
+.copy-scrim {
+  background: linear-gradient(to bottom, var(--color-navy-deep), rgb(7 23 56 / 0.85) 45%, transparent 70%);
+}
+
+@media (min-width: 48rem) {
+  .copy-scrim {
+    background: radial-gradient(ellipse 40% 40% at 25% 41%, rgb(7 23 56 / 0.94) 55%, transparent);
+  }
+}
+
+/* The phone menu unrolls from under the header as one opaque sheet. */
+.menu-panel {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 150ms var(--ease-out-strong);
+}
+
+.menu-panel[data-open="true"] {
+  clip-path: inset(0);
+  transition-duration: 220ms;
+}
+
 .unveil {
-  animation: unveil 900ms var(--ease-in-out-strong) 120ms both;
+  animation: unveil 700ms var(--ease-out-strong) 120ms both;
+}
+
+/* The form's replies: sent, or handed to the shipper's email. */
+.appear {
+  animation: rise 240ms var(--ease-out-strong) both;
 }
 
 /* ---- map ---- */
+/* City names carry a halo of the land colour, so a road passing behind never cuts the letters. */
+.map-city,
+.map-home {
+  paint-order: stroke;
+  stroke: var(--color-navy);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
 .map-city {
   font-size: 20px;
   font-weight: 600;
@@ -314,34 +379,52 @@
   }
 }
 
-/* Highways draw outward from the crossing the first time the map is seen. */
+/* The map is fully drawn by default. The component arms the entrance only when
+   it knows the map has not been seen yet, so a failed script never hides it.
+   Once seen, the highways draw outward from the crossing: the five that leave
+   it first, then the roads that continue from them. */
 .map-route {
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition:
-    stroke-dashoffset 1400ms var(--ease-in-out-strong) calc(var(--i, 0) * 110ms),
-    opacity 180ms ease,
-    stroke 180ms ease,
-    stroke-width 180ms ease;
-}
-
-.map-fade {
-  opacity: 0;
-  transition: opacity 500ms ease 1100ms;
-}
-
-.map[data-drawn="true"] .map-route {
   stroke-dashoffset: 0;
+  transition:
+    stroke-dashoffset 900ms var(--ease-out-strong) calc(var(--i, 0) * 60ms),
+    opacity 180ms ease;
 }
 
-.map[data-drawn="true"] .map-fade {
-  opacity: 1;
+/* Names and city dots follow once the last roads are landing. */
+.map-fade {
+  transition: opacity 350ms ease 700ms;
 }
 
+.map[data-phase="armed"] .map-route {
+  stroke-dashoffset: 1;
+  transition: none;
+}
+
+.map[data-phase="armed"] .map-fade {
+  opacity: 0;
+  transition: none;
+}
+
+/* Three rings from the crossing as the roads leave it, then it rests. */
 .map-ping {
+  opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  animation: ping 2.4s var(--ease-out-strong) infinite;
+}
+
+.map[data-phase="drawn"] .map-ping {
+  animation: ping 2.4s var(--ease-out-strong) 3;
+}
+
+/* A chosen destination: its road draws out from the crossing and the city lights up as it lands. */
+.map-trip-line {
+  stroke-dasharray: 1;
+  animation: draw 400ms var(--ease-out-strong) both;
+}
+
+.map-trip-dot {
+  animation: fade 160ms ease 160ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -351,32 +434,35 @@
 
   .rise,
   .unveil,
+  .appear,
   .line-mask > span {
     animation: fade 300ms ease both;
   }
 
-  .btn:hover,
-  .btn:active,
+  /* The press stays: it confirms the click and moves a single pixel. */
+  .btn:hover:not(:active),
   .group:hover .arrow {
     transform: none;
   }
 
-  .map-route {
+  .link-draw,
+  .menu-panel {
+    transition: none;
+  }
+
+  .map-route,
+  .map[data-phase="armed"] .map-route {
     stroke-dashoffset: 0;
-    transition:
-      opacity 180ms ease,
-      stroke 180ms ease;
+    transition: opacity 180ms ease;
   }
 
   .map-fade {
     transition-delay: 0ms;
   }
 
-  .map-ping {
+  .map[data-phase="drawn"] .map-ping,
+  .map-trip-line,
+  .map-trip-dot {
     animation: none;
-  }
-
-  .map-runner {
-    display: none;
   }
 }

@@ -187,7 +187,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className={`${archivo.variable} antialiased`}>
         <script
           type="application/ld+json"

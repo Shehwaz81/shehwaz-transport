@@ -22,15 +22,20 @@ export function TruckStage({ chapters, children }: { chapters: string[]; childre
     const canvas = canvasRef.current!;
     let scene: TruckScene | null = null;
     let dead = false;
+    let onScreen = true;
 
     const read = () => {
       const r = section.getBoundingClientRect();
+      if (!r.height) return; // detached while the page is changing
       const c = Math.min(screens - 1, Math.max(0, -r.top / (r.height / screens)));
       scene?.setChapter(c);
       setActive(Math.round(c));
     };
 
-    const io = new IntersectionObserver(([entry]) => scene?.setActive(entry.isIntersecting));
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      scene?.setActive(onScreen);
+    });
     io.observe(section);
     window.addEventListener("scroll", read, { passive: true });
     window.addEventListener("resize", read);
@@ -47,6 +52,7 @@ export function TruckStage({ chapters, children }: { chapters: string[]; childre
           onFirstFrame: () => setReady(true),
         });
         read();
+        scene.setActive(onScreen);
       } catch {
         // No WebGL: the photograph stands in for the model.
         setFailed(true);
@@ -83,6 +89,12 @@ export function TruckStage({ chapters, children }: { chapters: string[]; childre
         {/* keeps type readable where it sits over the scene */}
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-gradient-to-b from-navy-deep/90 via-navy-deep/25 to-transparent md:bg-gradient-to-r md:from-navy-deep/80 md:via-navy-deep/20" />
 
+        {/* the bridge spans the whole frame; this holds its cables back from the copy */}
+        <div
+          aria-hidden
+          className={`copy-scrim pointer-events-none absolute inset-0 transition-opacity duration-500 ${active === chapters.length ? "opacity-100" : "opacity-0"}`}
+        />
+
         <nav
           aria-label="Services shown in the scene"
           className={`shell absolute inset-x-0 bottom-20 transition-opacity duration-200 md:bottom-6 ${active > 0 ? "opacity-100" : "pointer-events-none opacity-0"}`}
@@ -100,7 +112,7 @@ export function TruckStage({ chapters, children }: { chapters: string[]; childre
                 >
                   <span className="relative block h-0.5 overflow-hidden bg-white/20">
                     <span
-                      className={`absolute inset-0 origin-left bg-white transition-transform duration-300 ease-out-strong ${active >= i + 1 ? "scale-x-100" : "scale-x-0"}`}
+                      className={`absolute inset-0 origin-left bg-white transition-transform duration-300 ease-out-strong motion-reduce:transition-none ${active >= i + 1 ? "scale-x-100" : "scale-x-0"}`}
                     />
                   </span>
                   <span
